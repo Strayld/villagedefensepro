@@ -1,0 +1,81 @@
+name: VillageDefensePro
+version: '${project.version}'
+main: fr.obsidianlabs.plugins.villagedefense.VillageDefensePlugin
+api-version: '1.17'
+description: Plugin PvE - Défendez le village contre des vagues de zombies
+authors: [ ObsidianLabs ]
+website: ''
+softdepend: [ OldCombatMechanics, Vault, PlaceholderAPI, ProtocolLib ]
+
+commands:
+  vd:
+    description: Commande principale de Village Defense Pro
+    usage: /vd <sous-commande>
+    aliases: [ villagedefense, vdef ]
+  vdadmin:
+    description: Commande d'administration de Village Defense Pro
+    usage: /vdadmin <sous-commande>
+    aliases: [ vda ]
+
+permissions:
+  villagedefense.admin:
+    description: Accès à toutes les fonctionnalités d'administration
+    default: op
+    children:
+      villagedefense.admin.arena: true
+      villagedefense.admin.setup: true
+      villagedefense.admin.schematic: true
+      villagedefense.admin.lang: true
+      villagedefense.admin.database: true
+      villagedefense.admin.prices: true
+      villagedefense.admin.reload: true
+      villagedefense.admin.game: true
+      villagedefense.admin.player: true
+
+  villagedefense.admin.arena:
+    description: Créer et supprimer des arènes
+    default: op
+
+  villagedefense.admin.setup:
+    description: Configurer une arène via le GUI et la baguette
+    default: op
+
+  villagedefense.admin.schematic:
+    description: Gérer les schematics de tours
+    default: op
+
+  villagedefense.admin.lang:
+    description: Changer la langue du plugin
+    default: op
+
+  villagedefense.admin.database:
+    description: Configurer la base de données
+    default: op
+
+  villagedefense.admin.prices:
+    description: Modifier les prix du shop
+    default: op
+
+  villagedefense.admin.reload:
+    description: Recharger la configuration et les schematics
+    default: op
+
+  villagedefense.admin.game:
+    description: Forcer le démarrage/arrêt d'une partie et gérer les vagues
+    default: op
+
+  villagedefense.admin.player:
+    description: Gérer les coins et le niveau des joueurs
+    default: op
+
+  villagedefense.play:
+    description: Permet de jouer à Village Defense Pro
+    default: true
+
+  villagedefense.test:
+    description: Permet de rejoindre les arènes en mode test
+    default: false
+
+  villagedefense.bypass:
+    description: Bypass certaines restrictions
+    default: op

@@ -1,0 +1,15 @@
+.DS_Store
+
+# IDE and local tooling
+.vscode/
+.claude/
+
+# Maven build output
+target/
+
+# Logs
+*.log
+
+# OS and temp files
+*.tmp
+*.swp

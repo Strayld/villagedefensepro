@@ -1,0 +1,263 @@
+# =============================
+#   Village Defense Pro - Config
+# =============================
+
+database:
+  type: SQLITE  # SQLITE (backend local H2) ou MYSQL
+  # MySQL uniquement
+  host: localhost
+  port: 3306
+  name: villagedefense
+  username: root
+  password: ''
+  pool-size: 10
+
+network:
+  # Active la synchronisation réseau des arènes dans la table MySQL partagée vd_network_arenas.
+  # Nécessite database.type: MYSQL (ignoré silencieusement en mode H2 local).
+  # Utilisé par le plugin VillageDefenseHub pour découvrir les arènes du réseau.
+  enabled: false
+  # Identifiant unique de CE serveur tel qu'il apparaîtra dans la table réseau.
+  # Doit correspondre exactement au nom du serveur configuré dans BungeeCord/Velocity.
+  server-id: "survival-1"
+  # Intervalle de synchronisation en secondes (min recommandé : 5).
+  sync-interval: 10
+
+hooks:
+  vault:
+    permissions: true
+    economy-sync: false
+  bungeecord:
+    enabled: false
+    # Nom exact du serveur cible sur le proxy pour y renvoyer les joueurs en sortie.
+    return-server: ''
+
+village:
+  # Nombre de villageois à spawner (= nombre de vies)
+  villager-count: 10
+  # Rayon de spawn autour du centre (blocs)
+  spawn-radius: 8
+  # Rayon maximum avant téléportation de retour (blocs)
+  villager-radius: 30
+  # Intervalle de la tâche de gardiennage (ticks, 40 = 2s)
+  keeper-interval: 40
+
+game:
+  # Durée du lobby en secondes
+  lobby-countdown: 30
+  # Durée entre deux vagues normales (secondes)
+  between-waves-duration: 15
+  # Durée entre deux vagues après un boss (secondes)
+  between-boss-waves-duration: 45
+  # Nombre de joueurs min pour démarrer
+  min-players: 1
+  # Nombre de joueurs max par arène
+  max-players: 6
+  # Difficulté des vagues (multiplicateur de HP/nombre de mobs)
+  difficulty-multiplier: 1.0
+  # Nombre de lives du village (0 = game over)
+  village-lives: 10
+
+waves:
+  # Vague spéciale toutes les X vagues normales
+  special-wave-interval: 5
+  # Vague boss toutes les X vagues
+  boss-wave-interval: 10
+  # Délai entre chaque spawn de mob (ticks)
+  spawn-delay: 10
+  # HP de base des zombies (augmente chaque vague)
+  base-zombie-hp: 20.0
+  hp-increment-per-wave: 5.0
+  # Nombre de base de mobs par vague
+  base-mob-count: 5
+  mob-count-increment: 3
+
+towers:
+  # Ticks entre chaque attaque des tours (20 ticks = 1 seconde)
+  archer:
+    attack-interval: 20
+    base-damage: 6.0
+    base-range: 15.0
+    cost: 100
+    upgrade-cost-multiplier: 1.5
+    levels:
+      1:
+        damage: 6.0
+        range: 15.0
+        attack-interval: 20
+      2:
+        damage: 10.0
+        range: 19.0
+        attack-interval: 17
+      3:
+        damage: 16.0
+        range: 24.0
+        attack-interval: 14
+  trebuchet:
+    attack-interval: 60
+    base-damage: 30.0
+    base-range: 20.0
+    cost: 250
+    upgrade-cost-multiplier: 2.0
+    levels:
+      1:
+        damage: 30.0
+        range: 20.0
+        attack-interval: 60
+      2:
+        damage: 50.0
+        range: 25.0
+        attack-interval: 50
+      3:
+        damage: 80.0
+        range: 30.0
+        attack-interval: 38
+  mage:
+    attack-interval: 30
+    base-damage: 8.0
+    base-range: 12.0
+    cost: 200
+    upgrade-cost-multiplier: 1.8
+    levels:
+      1:
+        damage: 8.0
+        range: 12.0
+        attack-interval: 30
+        slowness-duration: 60
+      2:
+        damage: 14.0
+        range: 16.0
+        attack-interval: 24
+        slowness-duration: 80
+      3:
+        damage: 22.0
+        range: 20.0
+        attack-interval: 18
+        slowness-duration: 100
+
+  ice:
+    attack-interval: 35
+    base-damage: 10.0
+    base-range: 12.0
+    cost: 180
+    upgrade-cost-multiplier: 1.8
+    levels:
+      1:
+        damage: 10.0
+        range: 12.0
+        attack-interval: 35
+        slowness-duration: 40
+      2:
+        damage: 16.0
+        range: 16.0
+        attack-interval: 28
+        slowness-duration: 60
+      3:
+        damage: 24.0
+        range: 20.0
+        attack-interval: 22
+        slowness-duration: 80
+  lightning:
+    attack-interval: 100
+    base-damage: 25.0
+    base-range: 18.0
+    cost: 400
+    upgrade-cost-multiplier: 2.4
+    levels:
+      1:
+        damage: 25.0
+        range: 18.0
+        attack-interval: 100
+      2:
+        damage: 45.0
+        range: 22.0
+        attack-interval: 80
+      3:
+        damage: 70.0
+        range: 26.0
+        attack-interval: 60
+  cannon:
+    attack-interval: 80
+    base-damage: 50.0
+    base-range: 22.0
+    cost: 300
+    upgrade-cost-multiplier: 2.2
+    levels:
+      1:
+        damage: 50.0
+        range: 22.0
+        attack-interval: 80
+      2:
+        damage: 85.0
+        range: 26.0
+        attack-interval: 65
+      3:
+        damage: 130.0
+        range: 30.0
+        attack-interval: 50
+
+kits:
+  guardian:
+    cost: 0  # Kit de base, gratuit
+    level-required: 1
+    cooldown: 0
+  ranger:
+    cost: 500
+    level-required: 3
+    cooldown: 0
+  berserker:
+    cost: 750
+    level-required: 5
+    cooldown: 0
+  medic:
+    cost: 600
+    level-required: 7
+    cooldown: 0
+  engineer:
+    cost: 800
+    level-required: 10
+    cooldown: 0
+
+# Prix du shop basé sur les coffres (par material, en pièces)
+# Si un item du coffre n'est pas listé ici, le prix 'default' est utilisé.
+shop-prices:
+  default: 25
+  bread: 8
+  cooked_beef: 12
+  cooked_chicken: 10
+  golden_apple: 60
+  enchanted_golden_apple: 200
+  potion: 35
+  splash_potion: 40
+  lingering_potion: 50
+  iron_sword: 80
+  diamond_sword: 200
+  bow: 60
+  crossbow: 90
+  arrow: 5
+  iron_helmet: 60
+  iron_chestplate: 90
+  iron_leggings: 75
+  iron_boots: 50
+  diamond_helmet: 150
+  diamond_chestplate: 220
+  diamond_leggings: 180
+  diamond_boots: 120
+  tnt: 80
+  cobweb: 5
+  firework_rocket: 30
+  ender_pearl: 45
+
+coins:
+  # Pièces gagnées par kill selon le type de mob
+  zombie: 5
+  skeleton: 8
+  spider: 6
+  wolf: 7
+  creeper: 15
+  witch: 20
+  boss: 100
+  # Bonus par vague complétée
+  wave-bonus: 25
+  # Bonus de survie (par vague si pas mort)
+  survival-bonus: 10

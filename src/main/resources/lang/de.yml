@@ -712,6 +712,9 @@ admin:
     gameplay-locations: "&eGameplay-Positionen"
     gameplay-locations-lore1: "&7Mob-Spawns, Dorfbewohner, Händler,"
     gameplay-locations-lore2: "&8Verzauberer, Türme und Fallen."
+    gameplay-system: "&dGameplay"
+    gameplay-system-lore1: "&7Schwierigkeit, Wellenskalierung,"
+    gameplay-system-lore2: "&8Mob-Pools und Überschreibungen."
     options: "&7Optionen"
     options-lore1: "&7Preise, Turm-Configs, Schematics,"
     options-lore2: "&8Schilder und Bestenliste."
@@ -1572,6 +1575,27 @@ gui:
     title: "§eGameplay-Positionen"
   arena-options:
     title: "§7Optionen"
+  gameplay:
+    main:
+      title: "§dGameplay — Konfiguration"
+    difficulty:
+      title: "§bSchwierigkeit"
+    wave-scaling:
+      title: "§aWellenskalierung"
+    wave-categories:
+      title: "§dWellenkategorien"
+    wave-category-editor:
+      title: "§dKategorie-Editor"
+    mob-pools:
+      title: "§cMob-Pools"
+    mob-pool-editor:
+      title: "§cPool-Editor"
+    mob-entry-editor:
+      title: "§cMob-Editor"
+    mob-selection:
+      title: "§eMob-Auswahl"
+    wave-overrides:
+      title: "§eWellen-Überschreibungen"
   shop-prices:
     title: "§6Shop-Preise"
   achievement-admin:

@@ -297,11 +297,12 @@ public class VillageDefensePlugin extends JavaPlugin {
         String ko = RG + "✗" + R + W;
 
         log.info(G + BOLD + "╔══════════════════════════════════════════════════╗" + R);
-        line.accept(Y + BOLD + "  __   __ ___ _    _      _   ___ ___" + R);
-        line.accept(Y + BOLD + "  \\ \\ / /|_ _| |  | |    /_\\ / __| __|" + R);
-        line.accept(Y + BOLD + "   \\ V /  | || |__| |__ / _ \\ (_ | _|" + R);
-        line.accept(Y + BOLD + "    \\_/  |___|____|____/_/ \\_\\___|___|" + R);
-        line.accept(C + BOLD + "        D E F E N S E  " + R + G + BOLD + "P R O" + R);
+        line.accept(Y + BOLD + " __      _____ _      _        ___ ___ ___ " + R);
+        line.accept(Y + BOLD + " \\ \\    / /_ _| |    | |      |   \\ __| __|" + R);
+        line.accept(Y + BOLD + "  \\ \\/\\/ / | || |__  | |__    | |) | _|| _| " + R);
+        line.accept(Y + BOLD + "   \\_/\\_/ |___|____| |____|   |___/|___|_|  " + R);
+        line.accept(C + BOLD + "        V I L L A G E   D E F E N S E" + R);
+        line.accept(G + BOLD + "                 P R O" + R);
         log.info(G + BOLD + "╠══════════════════════════════════════════════════╣" + R);
         line.accept(W + "  by " + B + BOLD + "Obsidian Labs" + R);
         line.accept(W + "  Version " + Y + getDescription().getVersion() + R + W

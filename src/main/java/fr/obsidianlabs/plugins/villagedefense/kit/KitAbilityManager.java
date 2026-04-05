@@ -314,32 +314,21 @@ public class KitAbilityManager {
 
     private void applyMedicAura() {
         for (Arena arena : plugin.getArenaManager().getAllArenas()) {
-            if (!isCombatArena(arena)) {
-                continue;
-            }
+            if (!isCombatArena(arena)) continue;
 
             for (Player medic : arena.getPlayers()) {
-                if (!isActiveArenaPlayer(medic) || !hasKit(medic, KitType.MEDIC)) {
-                    continue;
-                }
+                if (!isActiveArenaPlayer(medic) || !hasKit(medic, KitType.MEDIC)) continue;
+                if (medic.getWorld() == null) continue;
 
-                Location center = medic.getLocation();
-                for (Player ally : arena.getPlayers()) {
-                    if (ally.getUniqueId().equals(medic.getUniqueId())) {
-                        continue;
-                    }
-                    if (!isActiveArenaPlayer(ally)) {
-                        continue;
-                    }
-                    if (!sameWorld(center, ally.getLocation())) {
-                        continue;
-                    }
-                    if (center.distanceSquared(ally.getLocation()) > MEDIC_AURA_RADIUS * MEDIC_AURA_RADIUS) {
-                        continue;
-                    }
-                    ally.addPotionEffect(new org.bukkit.potion.PotionEffect(
-                        org.bukkit.potion.PotionEffectType.REGENERATION, 50, 0, false, false));
-                }
+                // getNearbyEntitiesByType utilise l'index spatial du monde — O(voisins) vs O(tous)
+                medic.getWorld()
+                    .getNearbyEntitiesByType(Player.class, medic.getLocation(), MEDIC_AURA_RADIUS)
+                    .forEach(ally -> {
+                        if (ally.getUniqueId().equals(medic.getUniqueId())) return;
+                        if (!isActiveArenaPlayer(ally)) return;
+                        ally.addPotionEffect(new org.bukkit.potion.PotionEffect(
+                            org.bukkit.potion.PotionEffectType.REGENERATION, 50, 0, false, false));
+                    });
             }
         }
     }

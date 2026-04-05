@@ -254,10 +254,21 @@ public class GameManager {
         clearObserverMode(player);
     }
 
+    /** Retourne true si l'entité appartient au plugin (ne doit pas être supprimée). */
+    private boolean isPluginEntity(Entity entity) {
+        return entity instanceof Player
+            || entity.hasMetadata(fr.obsidianlabs.plugins.villagedefense.wave.WaveManager.MOB_ARENA_META)
+            || entity.hasMetadata(VILLAGER_META)
+            || entity.hasMetadata(SHOP_VILLAGER_META)
+            || entity.hasMetadata(ENCHANT_VILLAGER_META)
+            || entity.hasMetadata(fr.obsidianlabs.plugins.villagedefense.perk.PerkManager.COMPANION_META);
+    }
+
     /**
-     * Supprime toutes les entités non-plugin présentes dans les bornes de l'arène
-     * au moment du lancement de la partie (mobs naturels, animaux, items au sol…).
-     * Les entités taguées par le plugin (vague, villageois, compagnons) sont préservées.
+     * Supprime toutes les entités Mob non-plugin dans les bornes de l'arène.
+     * Utilisé au démarrage (nettoie les mobs naturels) et en cours de partie (mobs intrus).
+     * @param onlyUntagged si true, supprime uniquement les mobs sans tag plugin (mode démarrage).
+     *                     si false, supprime aussi les mobs taggés d'autres arènes.
      */
     private void cleanArenaEntities(Arena arena) {
         Location p1 = arena.getPos1(), p2 = arena.getPos2();
@@ -270,12 +281,7 @@ public class GameManager {
 
         world.getNearbyEntities(new org.bukkit.util.BoundingBox(minX, minY, minZ, maxX, maxY, maxZ))
             .forEach(entity -> {
-                if (entity instanceof Player) return;
-                if (entity.hasMetadata(fr.obsidianlabs.plugins.villagedefense.wave.WaveManager.MOB_ARENA_META)) return;
-                if (entity.hasMetadata(VILLAGER_META)) return;
-                if (entity.hasMetadata(SHOP_VILLAGER_META)) return;
-                if (entity.hasMetadata(ENCHANT_VILLAGER_META)) return;
-                if (entity.hasMetadata(fr.obsidianlabs.plugins.villagedefense.perk.PerkManager.COMPANION_META)) return;
+                if (isPluginEntity(entity)) return;
                 if (!(entity instanceof Mob)) return; // garder les items/projectiles/bateaux…
                 entity.remove();
             });
@@ -499,7 +505,7 @@ public class GameManager {
                     if (golem.isDead() || !golem.isValid()) { cancel(); return; }
                     LivingEntity nearest = null;
                     double best = Double.MAX_VALUE;
-                    for (java.util.UUID uid : arena.getActiveMobUUIDs()) {
+                    for (java.util.UUID uid : new java.util.ArrayList<>(arena.getActiveMobUUIDs())) {
                         Entity mob = Bukkit.getEntity(uid);
                         if (mob == null || !mob.isValid() || mob.isDead()) continue;
                         double d = mob.getLocation().distanceSquared(golem.getLocation());
@@ -1232,12 +1238,7 @@ public class GameManager {
         p1.getWorld().getNearbyEntities(new org.bukkit.util.BoundingBox(minX, minY, minZ, maxX, maxY, maxZ))
             .forEach(entity -> {
                 if (!(entity instanceof Mob)) return;
-                if (entity instanceof Player) return;
-                if (entity.hasMetadata(fr.obsidianlabs.plugins.villagedefense.wave.WaveManager.MOB_ARENA_META)) return;
-                if (entity.hasMetadata(VILLAGER_META)) return;
-                if (entity.hasMetadata(SHOP_VILLAGER_META)) return;
-                if (entity.hasMetadata(ENCHANT_VILLAGER_META)) return;
-                if (entity.hasMetadata(fr.obsidianlabs.plugins.villagedefense.perk.PerkManager.COMPANION_META)) return;
+                if (isPluginEntity(entity)) return;
                 entity.remove();
             });
     }

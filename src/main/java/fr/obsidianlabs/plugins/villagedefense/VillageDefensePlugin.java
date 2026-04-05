@@ -249,6 +249,7 @@ public class VillageDefensePlugin extends JavaPlugin {
         perkManager = new PerkManager(this);
         powerUpManager = new PowerUpManager(this);
         waypointGuideManager = new WaypointGuideManager(this);
+        waypointGuideManager.start();
         leaderboardDisplayManager = new LeaderboardDisplayManager(this);
         publicApi = new VillageDefenseApiService(this);
         publicApi.register();
@@ -328,6 +329,8 @@ public class VillageDefensePlugin extends JavaPlugin {
             kitAbilityManager.shutdown();
         if (leaderboardDisplayManager != null)
             leaderboardDisplayManager.shutdown();
+        if (waypointGuideManager != null)
+            waypointGuideManager.stop();
         if (towerManager != null)
             towerManager.shutdown();
         if (trapManager != null)

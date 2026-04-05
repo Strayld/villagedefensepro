@@ -47,7 +47,8 @@ public class TowerManager {
 
     public void init() {
         TowerSchematic.init(plugin);
-        tickTask = plugin.getServer().getScheduler().runTaskTimer(plugin, this::tickAll, 1L, 1L);
+        // 4 ticks (200ms) est suffisant pour la précision des tours — divise par 4 le coût CPU
+        tickTask = plugin.getServer().getScheduler().runTaskTimer(plugin, this::tickAll, 1L, 4L);
     }
 
     public void shutdown() {

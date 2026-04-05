@@ -5,7 +5,7 @@ api-version: '1.17'
 description: Plugin PvE - Défendez le village contre des vagues de zombies
 authors: [ ObsidianLabs ]
 website: ''
-softdepend: [ OldCombatMechanics, Vault, PlaceholderAPI, ProtocolLib ]
+softdepend: [ OldCombatMechanics, Vault, PlaceholderAPI, ProtocolLib, MythicMobs ]
 
 commands:
   vd:

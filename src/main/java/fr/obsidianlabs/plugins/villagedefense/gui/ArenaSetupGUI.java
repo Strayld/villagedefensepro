@@ -46,10 +46,11 @@ public class ArenaSetupGUI {
     private static final int SLOT_MAX = 14;
 
     // ── Rangée 3 ────────────────────────────────────────────────────────────
-    private static final int SLOT_POSITIONS = 28;
-    private static final int SLOT_REWARDS = 32;
-    private static final int SLOT_GAMEPLAY = 30;
-    private static final int SLOT_OPTIONS = 34;
+    private static final int SLOT_POSITIONS        = 28;
+    private static final int SLOT_GAMEPLAY         = 30;  // Gameplay Locations (spawns, tours…)
+    private static final int SLOT_GAMEPLAY_SYSTEM  = 31;  // Nouveau : système Gameplay avancé
+    private static final int SLOT_REWARDS          = 32;
+    private static final int SLOT_OPTIONS          = 34;
 
     // ── Rangée 5 ────────────────────────────────────────────────────────────
     private static final int SLOT_BACK = 45;
@@ -97,6 +98,7 @@ public class ArenaSetupGUI {
         inv.setItem(SLOT_POSITIONS, buildPositionsButton(arena));
         inv.setItem(SLOT_REWARDS, buildRewardsButton(arena));
         inv.setItem(SLOT_GAMEPLAY, buildGameplayButton(arena));
+        inv.setItem(SLOT_GAMEPLAY_SYSTEM, buildGameplaySystemButton(arena));
         inv.setItem(SLOT_OPTIONS, buildOptionsButton(arena));
 
         // Rangée 5 — Actions
@@ -237,6 +239,17 @@ public class ArenaSetupGUI {
                 .build();
     }
 
+    private ItemStack buildGameplaySystemButton(Arena arena) {
+        boolean enabled = plugin.getArenaGameplayService().getSettings(arena.getId())
+            .getGeneralSettings().isEnabled();
+        return new ItemBuilder(enabled ? Material.NETHER_STAR : Material.COMPARATOR)
+            .name(m("admin.setup.gameplay-system"))
+            .lore(m("admin.setup.gameplay-system-lore1"),
+                  m("admin.setup.gameplay-system-lore2"),
+                  "", m("admin.common.click-to-edit"))
+            .build();
+    }
+
     private ItemStack buildOptionsButton(Arena arena) {
         return new ItemBuilder(Material.COMPARATOR)
                 .name(m("admin.setup.options"))
@@ -328,6 +341,8 @@ public class ArenaSetupGUI {
             case SLOT_REWARDS -> plugin.getArenaRewardsGui().open(admin, arena);
 
             case SLOT_GAMEPLAY -> plugin.getArenaGameplayLocationsGui().open(admin, arena);
+
+            case SLOT_GAMEPLAY_SYSTEM -> plugin.getGameplayMainGui().open(admin, arena);
 
             case SLOT_OPTIONS -> plugin.getArenaOptionsGui().open(admin, arena);
 

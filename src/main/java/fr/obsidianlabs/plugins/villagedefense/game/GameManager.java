@@ -4,6 +4,7 @@ import fr.obsidianlabs.plugins.villagedefense.VillageDefensePlugin;
 import fr.obsidianlabs.plugins.villagedefense.api.VillageDefenseProgressType;
 import fr.obsidianlabs.plugins.villagedefense.arena.Arena;
 import fr.obsidianlabs.plugins.villagedefense.arena.ArenaState;
+import fr.obsidianlabs.plugins.villagedefense.gameplay.model.ArenaGameplaySettings;
 import fr.obsidianlabs.plugins.villagedefense.arena.RegionSnapshot;
 import fr.obsidianlabs.plugins.villagedefense.compat.VersionCompat;
 import fr.obsidianlabs.plugins.villagedefense.player.VDPlayer;
@@ -362,6 +363,12 @@ public class GameManager {
 
         int villagerCount = plugin.getConfig().getInt("village.villager-count", 10);
         arena.resetGame(villagerCount);
+
+        ArenaGameplaySettings gameplaySettings = plugin.getArenaGameplayService().getSettings(arena.getId());
+        if (gameplaySettings.getGeneralSettings().isEnabled()
+                && gameplaySettings.getGeneralSettings().isUseAdvancedWaveSystem()) {
+            arena.setSelectedDifficulty(gameplaySettings.getDifficultySettings().getDefaultDifficulty());
+        }
 
         broadcast(arena, plugin.getMessages().format("arena.starting"));
 

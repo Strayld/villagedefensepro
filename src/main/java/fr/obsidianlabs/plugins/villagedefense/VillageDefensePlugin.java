@@ -64,6 +64,24 @@ import fr.obsidianlabs.plugins.villagedefense.powerup.PowerUpManager;
 import fr.obsidianlabs.plugins.villagedefense.shop.ShopManager;
 import fr.obsidianlabs.plugins.villagedefense.tower.TowerManager;
 import fr.obsidianlabs.plugins.villagedefense.wave.WaveManager;
+import fr.obsidianlabs.plugins.villagedefense.gameplay.service.ArenaGameplayService;
+import fr.obsidianlabs.plugins.villagedefense.gameplay.service.MobRegistryService;
+import fr.obsidianlabs.plugins.villagedefense.gameplay.service.MobSpawnService;
+import fr.obsidianlabs.plugins.villagedefense.gameplay.service.WaveCategoryResolver;
+import fr.obsidianlabs.plugins.villagedefense.gameplay.service.WaveComposer;
+import fr.obsidianlabs.plugins.villagedefense.gameplay.service.WaveDifficultyCalculator;
+import fr.obsidianlabs.plugins.villagedefense.gameplay.provider.MythicMobsProvider;
+import fr.obsidianlabs.plugins.villagedefense.gameplay.provider.VanillaMobProvider;
+import fr.obsidianlabs.plugins.villagedefense.gui.GameplayMainGUI;
+import fr.obsidianlabs.plugins.villagedefense.gui.DifficultyGUI;
+import fr.obsidianlabs.plugins.villagedefense.gui.WaveScalingGUI;
+import fr.obsidianlabs.plugins.villagedefense.gui.WaveCategoriesGUI;
+import fr.obsidianlabs.plugins.villagedefense.gui.WaveCategoryEditorGUI;
+import fr.obsidianlabs.plugins.villagedefense.gui.MobPoolsGUI;
+import fr.obsidianlabs.plugins.villagedefense.gui.MobPoolEditorGUI;
+import fr.obsidianlabs.plugins.villagedefense.gui.MobEntryEditorGUI;
+import fr.obsidianlabs.plugins.villagedefense.gui.MobSelectionListGUI;
+import fr.obsidianlabs.plugins.villagedefense.gui.WaveOverridesGUI;
 import org.bukkit.NamespacedKey;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -140,6 +158,26 @@ public class VillageDefensePlugin extends JavaPlugin {
     private TowerConfigGUI towerConfigGui;
     private DatabaseGUI databaseGui;
 
+    // Gameplay system
+    private ArenaGameplayService arenaGameplayService;
+    private MobRegistryService mobRegistryService;
+    private MobSpawnService mobSpawnService;
+    private WaveCategoryResolver waveCategoryResolver;
+    private WaveDifficultyCalculator waveDifficultyCalculator;
+    private WaveComposer waveComposer;
+
+    // Gameplay GUIs
+    private GameplayMainGUI gameplayMainGui;
+    private DifficultyGUI difficultyGui;
+    private WaveScalingGUI waveScalingGui;
+    private WaveCategoriesGUI waveCategoriesGui;
+    private WaveCategoryEditorGUI waveCategoryEditorGui;
+    private MobPoolsGUI mobPoolsGui;
+    private MobPoolEditorGUI mobPoolEditorGui;
+    private MobEntryEditorGUI mobEntryEditorGui;
+    private MobSelectionListGUI mobSelectionListGui;
+    private WaveOverridesGUI waveOverridesGui;
+
     // Utilitaires
     private ChatInputManager chatInputManager;
 
@@ -185,6 +223,20 @@ public class VillageDefensePlugin extends JavaPlugin {
         kitAbilityManager.init();
 
         waveManager = new WaveManager(this);
+
+        // Gameplay system
+        mobRegistryService = new MobRegistryService();
+        mobRegistryService.registerProvider(new VanillaMobProvider(this));
+        if (getServer().getPluginManager().getPlugin("MythicMobs") != null) {
+            mobRegistryService.registerProvider(new MythicMobsProvider(this));
+            getLogger().info("[Gameplay] MythicMobs détecté — provider enregistré.");
+        }
+        waveCategoryResolver    = new WaveCategoryResolver();
+        waveDifficultyCalculator = new WaveDifficultyCalculator();
+        waveComposer            = new WaveComposer(getLogger());
+        arenaGameplayService    = new ArenaGameplayService(this);
+        mobSpawnService         = new MobSpawnService(this, mobRegistryService);
+
         towerManager = new TowerManager(this);
         towerManager.init();
         trapManager = new TrapManager(this);
@@ -228,8 +280,8 @@ public class VillageDefensePlugin extends JavaPlugin {
         achievementEditGui = new AchievementEditGUI(this);
         schematicGui = new SchematicGUI(this);
         schematicCategoryGui = new SchematicCategoryGUI(this);
-        vdAdminGui   = new VDAdminGUI(this);
-        languageGui  = new LanguageGUI(this);
+        vdAdminGui = new VDAdminGUI(this);
+        languageGui = new LanguageGUI(this);
         iconPickerGui = new IconPickerGUI(this);
         specializationGui = new SpecializationGUI(this);
         trapGui = new TrapGUI(this);
@@ -243,6 +295,18 @@ public class VillageDefensePlugin extends JavaPlugin {
         arenaPathSpawnersGui = new ArenaPathSpawnersGUI(this);
         arenaRewardsGui = new ArenaRewardsGUI(this);
 
+        // Gameplay GUIs
+        gameplayMainGui        = new GameplayMainGUI(this);
+        difficultyGui          = new DifficultyGUI(this);
+        waveScalingGui         = new WaveScalingGUI(this);
+        waveCategoriesGui      = new WaveCategoriesGUI(this);
+        waveCategoryEditorGui  = new WaveCategoryEditorGUI(this);
+        mobPoolsGui            = new MobPoolsGUI(this);
+        mobPoolEditorGui       = new MobPoolEditorGUI(this);
+        mobEntryEditorGui      = new MobEntryEditorGUI(this);
+        mobSelectionListGui    = new MobSelectionListGUI(this);
+        waveOverridesGui       = new WaveOverridesGUI(this);
+
         registerListeners();
         registerCommands();
 
@@ -252,40 +316,59 @@ public class VillageDefensePlugin extends JavaPlugin {
 
     @Override
     public void onDisable() {
-        if (publicApi != null) publicApi.unregister();
-        if (networkSyncManager != null) networkSyncManager.stop();
-        if (hookManager != null) hookManager.disable();
-        if (gameManager != null) gameManager.shutdown();
-        if (kitAbilityManager != null) kitAbilityManager.shutdown();
-        if (leaderboardDisplayManager != null) leaderboardDisplayManager.shutdown();
-        if (towerManager != null) towerManager.shutdown();
-        if (trapManager  != null) trapManager.shutdown();
-        if (arenaManager != null) arenaManager.shutdown();
+        if (publicApi != null)
+            publicApi.unregister();
+        if (networkSyncManager != null)
+            networkSyncManager.stop();
+        if (hookManager != null)
+            hookManager.disable();
+        if (gameManager != null)
+            gameManager.shutdown();
+        if (kitAbilityManager != null)
+            kitAbilityManager.shutdown();
+        if (leaderboardDisplayManager != null)
+            leaderboardDisplayManager.shutdown();
+        if (towerManager != null)
+            towerManager.shutdown();
+        if (trapManager != null)
+            trapManager.shutdown();
+        if (arenaManager != null)
+            arenaManager.shutdown();
         if (playerManager != null) {
             var futures = getServer().getOnlinePlayers().stream()
-                .map(playerManager::savePlayerAsync)
-                .toList();
-            futures.forEach(f -> { try { f.join(); } catch (Exception ignored) {} });
+                    .map(playerManager::savePlayerAsync)
+                    .toList();
+            futures.forEach(f -> {
+                try {
+                    f.join();
+                } catch (Exception ignored) {
+                }
+            });
         }
-        if (database != null) database.close();
+        if (database != null)
+            database.close();
         getLogger().info("VillageDefensePro désactivé. Au revoir !");
     }
 
     // ---- Banner ----
 
     private void printBanner(long elapsed) {
-        String G = "\u001B[32m";   // vert
-        String Y = "\u001B[33m";   // jaune
-        String C = "\u001B[36m";   // cyan
-        String W = "\u001B[37m";   // blanc
-        String B = "\u001B[34m";   // bleu
-        String RG = "\u001B[31m";  // rouge
-        String R = "\u001B[0m";    // reset
+        String G = "\u001B[32m"; // vert
+        String Y = "\u001B[33m"; // jaune
+        String C = "\u001B[36m"; // cyan
+        String W = "\u001B[37m"; // blanc
+        String B = "\u001B[34m"; // bleu
+        String RG = "\u001B[31m"; // rouge
+        String R = "\u001B[0m"; // reset
         String BOLD = "\u001B[1m";
         java.util.logging.Logger log = getLogger();
+        int bannerWidth = 66;
+        String topBorder = G + BOLD + "╔" + "═".repeat(bannerWidth) + "╗" + R;
+        String midBorder = G + BOLD + "╠" + "═".repeat(bannerWidth) + "╣" + R;
+        String bottomBorder = G + BOLD + "╚" + "═".repeat(bannerWidth) + "╝" + R;
         java.util.function.Consumer<String> line = content -> {
             String plain = content.replaceAll("\\u001B\\[[;\\d]*m", "");
-            int pad = Math.max(0, 50 - plain.length());
+            int pad = Math.max(0, bannerWidth - plain.length());
             log.info(G + BOLD + "║" + R + content + " ".repeat(pad) + G + BOLD + "║" + R);
         };
         boolean vault = hookManager != null && hookManager.isVaultEnabled();
@@ -296,24 +379,36 @@ public class VillageDefensePlugin extends JavaPlugin {
         String ok = G + "✓" + R + W;
         String ko = RG + "✗" + R + W;
 
-        log.info(G + BOLD + "╔══════════════════════════════════════════════════╗" + R);
-        line.accept(Y + BOLD + " __      _____ _      _        ___ ___ ___ " + R);
-        line.accept(Y + BOLD + " \\ \\    / /_ _| |    | |      |   \\ __| __|" + R);
-        line.accept(Y + BOLD + "  \\ \\/\\/ / | || |__  | |__    | |) | _|| _| " + R);
-        line.accept(Y + BOLD + "   \\_/\\_/ |___|____| |____|   |___/|___|_|  " + R);
-        line.accept(C + BOLD + "        V I L L A G E   D E F E N S E" + R);
-        line.accept(G + BOLD + "                 P R O" + R);
-        log.info(G + BOLD + "╠══════════════════════════════════════════════════╣" + R);
+        log.info(topBorder);
+        line.accept(Y + BOLD + "  ██╗   ██╗██╗██╗     ██╗      █████╗  ██████╗ ███████╗" + R);
+        line.accept(Y + BOLD + "  ██║   ██║██║██║     ██║     ██╔══██╗██╔════╝ ██╔════╝" + R);
+        line.accept(Y + BOLD + "  ██║   ██║██║██║     ██║     ███████║██║  ███╗█████╗  " + R);
+        line.accept(Y + BOLD + "  ╚██╗ ██╔╝██║██║     ██║     ██╔══██║██║   ██║██╔══╝  " + R);
+        line.accept(Y + BOLD + "   ╚████╔╝ ██║███████╗███████╗██║  ██║╚██████╔╝███████╗" + R);
+        line.accept(Y + BOLD + "    ╚═══╝  ╚═╝╚══════╝╚══════╝╚═╝  ╚═╝ ╚═════╝ ╚══════╝" + R);
+        line.accept(C + BOLD + "  ██████╗ ███████╗███████╗███████╗███╗   ██╗███████╗███████╗" + R);
+        line.accept(C + BOLD + "  ██╔══██╗██╔════╝██╔════╝██╔════╝████╗  ██║██╔════╝██╔════╝" + R);
+        line.accept(C + BOLD + "  ██║  ██║█████╗  █████╗  █████╗  ██╔██╗ ██║███████╗█████╗  " + R);
+        line.accept(C + BOLD + "  ██║  ██║██╔══╝  ██╔══╝  ██╔══╝  ██║╚██╗██║╚════██║██╔══╝  " + R);
+        line.accept(C + BOLD + "  ██████╔╝███████╗██║     ███████╗██║ ╚████║███████║███████╗" + R);
+        line.accept(C + BOLD + "  ╚═════╝ ╚══════╝╚═╝     ╚══════╝╚═╝  ╚═══╝╚══════╝╚══════╝" + R);
+        line.accept(G + BOLD + "                     ██████╗ ██████╗  ██████╗" + R);
+        line.accept(G + BOLD + "                     ██╔══██╗██╔══██╗██╔═══██╗" + R);
+        line.accept(G + BOLD + "                     ██████╔╝██████╔╝██║   ██║" + R);
+        line.accept(G + BOLD + "                     ██╔═══╝ ██╔══██╗██║   ██║" + R);
+        line.accept(G + BOLD + "                     ██║     ██║  ██║╚██████╔╝" + R);
+        line.accept(G + BOLD + "                     ╚═╝     ╚═╝  ╚═╝ ╚═════╝" + R);
+        log.info(midBorder);
         line.accept(W + "  by " + B + BOLD + "Obsidian Labs" + R);
         line.accept(W + "  Version " + Y + getDescription().getVersion() + R + W
-            + " | Arenes: " + Y + arenaManager.getAllArenas().size() + R + W
-            + " | Charge en " + Y + elapsed + "ms" + R);
+                + " | Arenes: " + Y + arenaManager.getAllArenas().size() + R + W
+                + " | Charge en " + Y + elapsed + "ms" + R);
         line.accept(W + "  Hooks: " + (vault ? ok : ko) + " Vault | "
-            + (papi ? ok : ko) + " PAPI | "
-            + (protocolLib ? ok : ko) + " ProtocolLib");
+                + (papi ? ok : ko) + " PAPI | "
+                + (protocolLib ? ok : ko) + " ProtocolLib");
         line.accept(W + "  Proxy: " + (bungeeCord ? ok : ko) + " BungeeCord | "
-            + (ocm ? ok : ko) + " OldCombatMechanics");
-        log.info(G + BOLD + "╚══════════════════════════════════════════════════╝" + R);
+                + (ocm ? ok : ko) + " OldCombatMechanics");
+        log.info(bottomBorder);
     }
 
     private boolean isHookEnabled(String pluginName) {
@@ -333,10 +428,16 @@ public class VillageDefensePlugin extends JavaPlugin {
         }
     }
 
-    /** Ferme la connexion actuelle et réinitialise la base de données (après changement de config). */
+    /**
+     * Ferme la connexion actuelle et réinitialise la base de données (après
+     * changement de config).
+     */
     public void reloadDatabase() {
         if (database != null) {
-            try { database.close(); } catch (Exception ignored) {}
+            try {
+                database.close();
+            } catch (Exception ignored) {
+            }
         }
         super.reloadConfig();
         initDatabase();
@@ -409,82 +510,276 @@ public class VillageDefensePlugin extends JavaPlugin {
 
     // ---- Utilitaires ----
 
-    public NamespacedKey getKey(String name) { return new NamespacedKey(this, name); }
+    public NamespacedKey getKey(String name) {
+        return new NamespacedKey(this, name);
+    }
 
     @Override
     public void reloadConfig() {
         super.reloadConfig();
-        if (messages != null) messages.reload();
-        if (hookManager != null) hookManager.enable();
-        if (messages != null) syncRuntimeMetadata();
-        if (leaderboardDisplayManager != null) leaderboardDisplayManager.refreshNow();
+        if (messages != null)
+            messages.reload();
+        if (hookManager != null)
+            hookManager.enable();
+        if (messages != null)
+            syncRuntimeMetadata();
+        if (leaderboardDisplayManager != null)
+            leaderboardDisplayManager.refreshNow();
     }
 
     // ---- Getters ----
 
-    public static VillageDefensePlugin getInstance() { return instance; }
+    public static VillageDefensePlugin getInstance() {
+        return instance;
+    }
+
     public boolean hasPermission(CommandSender sender, String node) {
         return hookManager != null ? hookManager.hasPermission(sender, node) : sender.hasPermission(node);
     }
-    public void sendActionBar(Player player, String legacyMessage) {
-        if (hookManager != null) hookManager.sendActionBar(player, legacyMessage);
-        else fr.obsidianlabs.plugins.villagedefense.util.ChatUtil.sendActionBar(player, legacyMessage);
-    }
-    public Messages getMessages()               { return messages; }
-    public VillageDefenseApi getPublicApi()     { return publicApi; }
-    public Database getDatabase()               { return database; }
-    public HookManager getHookManager()         { return hookManager; }
-    public ArenaAttemptManager getAttemptManager() { return attemptManager; }
-    public ArenaManager getArenaManager()       { return arenaManager; }
-    public PlayerManager getPlayerManager()     { return playerManager; }
-    public KitManager getKitManager()           { return kitManager; }
-    public KitAbilityManager getKitAbilityManager() { return kitAbilityManager; }
-    public WaveManager getWaveManager()         { return waveManager; }
-    public TowerManager getTowerManager()       { return towerManager; }
-    public ShopManager getShopManager()         { return shopManager; }
-    public GameManager getGameManager()         { return gameManager; }
-    public PerkManager getPerkManager()         { return perkManager; }
-    public PowerUpManager getPowerUpManager()       { return powerUpManager; }
-    public WaypointGuideManager getWaypointGuideManager() { return waypointGuideManager; }
-    public LeaderboardDisplayManager getLeaderboardDisplayManager() { return leaderboardDisplayManager; }
-    public NetworkSyncManager getNetworkSyncManager()               { return networkSyncManager; }
-    public KitGUI getKitGui()                   { return kitGui; }
-    public KitConfigGUI getKitConfigGui()       { return kitConfigGui; }
-    public BungeeConfigGUI getBungeeConfigGui()     { return bungeeConfigGui; }
-    public NetworkConfigGUI getNetworkConfigGui()   { return networkConfigGui; }
-    public SettingsGUI getSettingsGui()             { return settingsGui; }
-    public ShopGUI getShopGui()                 { return shopGui; }
-    public ShopPricesGUI getShopPricesGui()     { return shopPricesGui; }
-    public PerksGUI getPerksGui()               { return perksGui; }
-    public TowerGUI getTowerGui()               { return towerGui; }
-    public ArenaSetupGUI getArenaSetupGui()                         { return arenaSetupGui; }
-    public ArenaPositionsGUI getArenaPositionsGui()                 { return arenaPositionsGui; }
-    public ArenaGameplayLocationsGUI getArenaGameplayLocationsGui() { return arenaGameplayLocationsGui; }
-    public ArenaOptionsGUI getArenaOptionsGui()                     { return arenaOptionsGui; }
-    public AchievementManager getAchievementManager()     { return achievementManager; }
-    public AchievementGUI getAchievementGui()             { return achievementGui; }
-    public AchievementAdminGUI getAchievementAdminGui()   { return achievementAdminGui; }
-    public AchievementEditGUI getAchievementEditGui()     { return achievementEditGui; }
-    public SchematicGUI getSchematicGui()                 { return schematicGui; }
-    public SchematicCategoryGUI getSchematicCategoryGui() { return schematicCategoryGui; }
-    public VDAdminGUI getVdAdminGui()                     { return vdAdminGui; }
-    public LanguageGUI getLanguageGui()                   { return languageGui; }
-    public IconPickerGUI getIconPickerGui()               { return iconPickerGui; }
-    public SpecializationGUI getSpecializationGui()       { return specializationGui; }
-    public TrapGUI getTrapGui()                           { return trapGui; }
-    public LeaderboardGUI getLeaderboardGui()             { return leaderboardGui; }
-    public EnchantGUI getEnchantGui()                     { return enchantGui; }
-    public EnchantPricesGUI getEnchantPricesGui()         { return enchantPricesGui; }
-    public TowerConfigGUI getTowerConfigGui()             { return towerConfigGui; }
-    public DatabaseGUI getDatabaseGui()                   { return databaseGui; }
-    public TrapManager getTrapManager()                   { return trapManager; }
-    public ArenaPathsGUI getArenaPathsGui()               { return arenaPathsGui; }
-    public ArenaPathEditGUI getArenaPathEditGui()         { return arenaPathEditGui; }
-    public ArenaPathSpawnersGUI getArenaPathSpawnersGui() { return arenaPathSpawnersGui; }
-    public ArenaRewardsGUI getArenaRewardsGui()           { return arenaRewardsGui; }
-    public ChatInputManager getChatInputManager() { return chatInputManager; }
 
-    public void fireProgress(Player player, Arena arena, VillageDefenseProgressType type, long amount, long total, String detail) {
+    public void sendActionBar(Player player, String legacyMessage) {
+        if (hookManager != null)
+            hookManager.sendActionBar(player, legacyMessage);
+        else
+            fr.obsidianlabs.plugins.villagedefense.util.ChatUtil.sendActionBar(player, legacyMessage);
+    }
+
+    public Messages getMessages() {
+        return messages;
+    }
+
+    public VillageDefenseApi getPublicApi() {
+        return publicApi;
+    }
+
+    public Database getDatabase() {
+        return database;
+    }
+
+    public HookManager getHookManager() {
+        return hookManager;
+    }
+
+    public ArenaAttemptManager getAttemptManager() {
+        return attemptManager;
+    }
+
+    public ArenaManager getArenaManager() {
+        return arenaManager;
+    }
+
+    public PlayerManager getPlayerManager() {
+        return playerManager;
+    }
+
+    public KitManager getKitManager() {
+        return kitManager;
+    }
+
+    public KitAbilityManager getKitAbilityManager() {
+        return kitAbilityManager;
+    }
+
+    public WaveManager getWaveManager() {
+        return waveManager;
+    }
+
+    public TowerManager getTowerManager() {
+        return towerManager;
+    }
+
+    public ShopManager getShopManager() {
+        return shopManager;
+    }
+
+    public GameManager getGameManager() {
+        return gameManager;
+    }
+
+    public PerkManager getPerkManager() {
+        return perkManager;
+    }
+
+    public PowerUpManager getPowerUpManager() {
+        return powerUpManager;
+    }
+
+    public WaypointGuideManager getWaypointGuideManager() {
+        return waypointGuideManager;
+    }
+
+    public LeaderboardDisplayManager getLeaderboardDisplayManager() {
+        return leaderboardDisplayManager;
+    }
+
+    public NetworkSyncManager getNetworkSyncManager() {
+        return networkSyncManager;
+    }
+
+    public KitGUI getKitGui() {
+        return kitGui;
+    }
+
+    public KitConfigGUI getKitConfigGui() {
+        return kitConfigGui;
+    }
+
+    public BungeeConfigGUI getBungeeConfigGui() {
+        return bungeeConfigGui;
+    }
+
+    public NetworkConfigGUI getNetworkConfigGui() {
+        return networkConfigGui;
+    }
+
+    public SettingsGUI getSettingsGui() {
+        return settingsGui;
+    }
+
+    public ShopGUI getShopGui() {
+        return shopGui;
+    }
+
+    public ShopPricesGUI getShopPricesGui() {
+        return shopPricesGui;
+    }
+
+    public PerksGUI getPerksGui() {
+        return perksGui;
+    }
+
+    public TowerGUI getTowerGui() {
+        return towerGui;
+    }
+
+    public ArenaSetupGUI getArenaSetupGui() {
+        return arenaSetupGui;
+    }
+
+    public ArenaPositionsGUI getArenaPositionsGui() {
+        return arenaPositionsGui;
+    }
+
+    public ArenaGameplayLocationsGUI getArenaGameplayLocationsGui() {
+        return arenaGameplayLocationsGui;
+    }
+
+    public ArenaOptionsGUI getArenaOptionsGui() {
+        return arenaOptionsGui;
+    }
+
+    public AchievementManager getAchievementManager() {
+        return achievementManager;
+    }
+
+    public AchievementGUI getAchievementGui() {
+        return achievementGui;
+    }
+
+    public AchievementAdminGUI getAchievementAdminGui() {
+        return achievementAdminGui;
+    }
+
+    public AchievementEditGUI getAchievementEditGui() {
+        return achievementEditGui;
+    }
+
+    public SchematicGUI getSchematicGui() {
+        return schematicGui;
+    }
+
+    public SchematicCategoryGUI getSchematicCategoryGui() {
+        return schematicCategoryGui;
+    }
+
+    public VDAdminGUI getVdAdminGui() {
+        return vdAdminGui;
+    }
+
+    public LanguageGUI getLanguageGui() {
+        return languageGui;
+    }
+
+    public IconPickerGUI getIconPickerGui() {
+        return iconPickerGui;
+    }
+
+    public SpecializationGUI getSpecializationGui() {
+        return specializationGui;
+    }
+
+    public TrapGUI getTrapGui() {
+        return trapGui;
+    }
+
+    public LeaderboardGUI getLeaderboardGui() {
+        return leaderboardGui;
+    }
+
+    public EnchantGUI getEnchantGui() {
+        return enchantGui;
+    }
+
+    public EnchantPricesGUI getEnchantPricesGui() {
+        return enchantPricesGui;
+    }
+
+    public TowerConfigGUI getTowerConfigGui() {
+        return towerConfigGui;
+    }
+
+    public DatabaseGUI getDatabaseGui() {
+        return databaseGui;
+    }
+
+    public TrapManager getTrapManager() {
+        return trapManager;
+    }
+
+    public ArenaPathsGUI getArenaPathsGui() {
+        return arenaPathsGui;
+    }
+
+    public ArenaPathEditGUI getArenaPathEditGui() {
+        return arenaPathEditGui;
+    }
+
+    public ArenaPathSpawnersGUI getArenaPathSpawnersGui() {
+        return arenaPathSpawnersGui;
+    }
+
+    public ArenaRewardsGUI getArenaRewardsGui() {
+        return arenaRewardsGui;
+    }
+
+    public ChatInputManager getChatInputManager() {
+        return chatInputManager;
+    }
+
+    // ---- Gameplay system ----
+
+    public ArenaGameplayService getArenaGameplayService()         { return arenaGameplayService; }
+    public MobRegistryService getMobRegistryService()             { return mobRegistryService; }
+    public MobSpawnService getMobSpawnService()                   { return mobSpawnService; }
+    public WaveCategoryResolver getWaveCategoryResolver()         { return waveCategoryResolver; }
+    public WaveDifficultyCalculator getWaveDifficultyCalculator() { return waveDifficultyCalculator; }
+    public WaveComposer getWaveComposer()                         { return waveComposer; }
+
+    // ---- Gameplay GUIs ----
+
+    public GameplayMainGUI getGameplayMainGui()               { return gameplayMainGui; }
+    public DifficultyGUI getDifficultyGui()                   { return difficultyGui; }
+    public WaveScalingGUI getWaveScalingGui()                 { return waveScalingGui; }
+    public WaveCategoriesGUI getWaveCategoriesGui()           { return waveCategoriesGui; }
+    public WaveCategoryEditorGUI getWaveCategoryEditorGui()   { return waveCategoryEditorGui; }
+    public MobPoolsGUI getMobPoolsGui()                       { return mobPoolsGui; }
+    public MobPoolEditorGUI getMobPoolEditorGui()             { return mobPoolEditorGui; }
+    public MobEntryEditorGUI getMobEntryEditorGui()           { return mobEntryEditorGui; }
+    public MobSelectionListGUI getMobSelectionListGui()       { return mobSelectionListGui; }
+    public WaveOverridesGUI getWaveOverridesGui()             { return waveOverridesGui; }
+
+    public void fireProgress(Player player, Arena arena, VillageDefenseProgressType type, long amount, long total,
+            String detail) {
         if (publicApi != null) {
             publicApi.fireProgress(player, arena, type, amount, total, detail);
         }

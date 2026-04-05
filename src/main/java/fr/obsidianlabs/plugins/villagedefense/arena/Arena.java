@@ -1,5 +1,6 @@
 package fr.obsidianlabs.plugins.villagedefense.arena;
 
+import fr.obsidianlabs.plugins.villagedefense.gameplay.model.GameDifficulty;
 import fr.obsidianlabs.plugins.villagedefense.tower.TowerSlot;
 import fr.obsidianlabs.plugins.villagedefense.tower.TowerType;
 import fr.obsidianlabs.plugins.villagedefense.trap.TrapSlot;
@@ -98,6 +99,9 @@ public class Arena {
     // Compteurs de session
     private int countdownSeconds;
     private int betweenWaveSeconds;
+
+    // Difficulté active pour la session en cours (avancée uniquement)
+    private GameDifficulty selectedDifficulty = GameDifficulty.NORMAL;
 
     public Arena(String id) {
         this.id = id;
@@ -473,6 +477,11 @@ public class Arena {
 
     // --- Compteurs ---
 
+    public GameDifficulty getSelectedDifficulty() { return selectedDifficulty; }
+    public void setSelectedDifficulty(GameDifficulty difficulty) {
+        this.selectedDifficulty = difficulty != null ? difficulty : GameDifficulty.NORMAL;
+    }
+
     public int getCountdownSeconds() { return countdownSeconds; }
     public void setCountdownSeconds(int s) { this.countdownSeconds = s; }
     public void decrementCountdown() { this.countdownSeconds--; }
@@ -542,6 +551,7 @@ public class Arena {
         villagersExtraPurchased = 0;
         lastVillagerPurchaseWave = -1;
         lastGuardPurchaseWave = -1;
+        selectedDifficulty = GameDifficulty.NORMAL;
         // Les joueurs ne sont pas effacés ici, ils restent dans l'arène
     }
 }

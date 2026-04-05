@@ -27,6 +27,10 @@
             <id>placeholderapi</id>
             <url>https://repo.helpch.at/releases</url>
         </repository>
+        <repository>
+            <id>lumine-repo</id>
+            <url>https://mvn.lumine.io/repository/maven-public/</url>
+        </repository>
     </repositories>
 
     <dependencies>
@@ -68,6 +72,14 @@
             <artifactId>mysql-connector-j</artifactId>
             <version>8.3.0</version>
             <scope>compile</scope>
+        </dependency>
+
+        <!-- MythicMobs (soft-depend, provided) -->
+        <dependency>
+            <groupId>io.lumine</groupId>
+            <artifactId>Mythic-Dist</artifactId>
+            <version>5.3.5</version>
+            <scope>provided</scope>
         </dependency>
     </dependencies>
 

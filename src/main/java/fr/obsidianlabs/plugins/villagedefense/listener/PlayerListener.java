@@ -628,6 +628,26 @@ public class PlayerListener implements Listener {
             plugin.getArenaPathSpawnersGui().handleClick(event, player);
         } else if (guiTitle(title, fr.obsidianlabs.plugins.villagedefense.gui.ArenaRewardsGUI.TITLE)) {
             plugin.getArenaRewardsGui().handleClick(event, player);
+        } else if (guiTitle(title, fr.obsidianlabs.plugins.villagedefense.gui.GameplayMainGUI.TITLE)) {
+            plugin.getGameplayMainGui().handleClick(event, player);
+        } else if (guiTitle(title, fr.obsidianlabs.plugins.villagedefense.gui.DifficultyGUI.TITLE)) {
+            plugin.getDifficultyGui().handleClick(event, player);
+        } else if (guiTitle(title, fr.obsidianlabs.plugins.villagedefense.gui.WaveScalingGUI.TITLE)) {
+            plugin.getWaveScalingGui().handleClick(event, player);
+        } else if (guiTitle(title, fr.obsidianlabs.plugins.villagedefense.gui.WaveCategoriesGUI.TITLE)) {
+            plugin.getWaveCategoriesGui().handleClick(event, player);
+        } else if (guiTitle(title, fr.obsidianlabs.plugins.villagedefense.gui.WaveCategoryEditorGUI.TITLE)) {
+            plugin.getWaveCategoryEditorGui().handleClick(event, player);
+        } else if (guiTitle(title, fr.obsidianlabs.plugins.villagedefense.gui.MobPoolsGUI.TITLE)) {
+            plugin.getMobPoolsGui().handleClick(event, player);
+        } else if (guiTitle(title, fr.obsidianlabs.plugins.villagedefense.gui.MobPoolEditorGUI.TITLE)) {
+            plugin.getMobPoolEditorGui().handleClick(event, player);
+        } else if (guiTitle(title, fr.obsidianlabs.plugins.villagedefense.gui.MobEntryEditorGUI.TITLE)) {
+            plugin.getMobEntryEditorGui().handleClick(event, player);
+        } else if (guiTitle(title, fr.obsidianlabs.plugins.villagedefense.gui.MobSelectionListGUI.TITLE)) {
+            plugin.getMobSelectionListGui().handleClick(event, player);
+        } else if (guiTitle(title, fr.obsidianlabs.plugins.villagedefense.gui.WaveOverridesGUI.TITLE)) {
+            plugin.getWaveOverridesGui().handleClick(event, player);
         }
     }
 

@@ -4,6 +4,10 @@ import fr.obsidianlabs.plugins.villagedefense.VillageDefensePlugin;
 import fr.obsidianlabs.plugins.villagedefense.arena.Arena;
 import fr.obsidianlabs.plugins.villagedefense.arena.ArenaState;
 import fr.obsidianlabs.plugins.villagedefense.compat.VersionCompat;
+import fr.obsidianlabs.plugins.villagedefense.gameplay.model.ArenaGameplaySettings;
+import fr.obsidianlabs.plugins.villagedefense.gameplay.model.GameDifficulty;
+import fr.obsidianlabs.plugins.villagedefense.gameplay.model.WaveComposition;
+import fr.obsidianlabs.plugins.villagedefense.gameplay.model.WaveDifficultyProfile;
 import fr.obsidianlabs.plugins.villagedefense.util.ChatUtil;
 import org.bukkit.*;
 import org.bukkit.attribute.Attribute;
@@ -11,8 +15,6 @@ import org.bukkit.entity.*;
 import org.bukkit.entity.Zombie;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.persistence.PersistentDataType;
-import org.bukkit.potion.PotionEffect;
-import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitTask;
 
 import java.util.List;
@@ -151,12 +153,57 @@ public class WaveManager {
     }
 
     /**
-     * Spawne tous les monstres d'une vague avec un délai entre chaque.
+     * Dispatche vers le système avancé ou le système legacy selon la config de l'arène.
      */
     private void spawnWave(Arena arena, Wave wave) {
+        ArenaGameplaySettings gameplaySettings =
+            plugin.getArenaGameplayService().getSettings(arena.getId());
+
+        if (gameplaySettings.getGeneralSettings().isUseAdvancedWaveSystem()) {
+            spawnWaveAdvanced(arena, wave.getWaveNumber());
+            return;
+        }
+        spawnWaveLegacy(arena, wave);
+    }
+
+    /**
+     * Nouveau système : génère la composition via ArenaGameplayService puis spawne.
+     */
+    private void spawnWaveAdvanced(Arena arena, int waveNum) {
+        GameDifficulty difficulty = arena.getSelectedDifficulty();
+
+        WaveComposition composition = plugin.getArenaGameplayService().buildWave(
+            arena.getId(),
+            waveNum,
+            difficulty,
+            plugin.getWaveCategoryResolver(),
+            plugin.getWaveDifficultyCalculator(),
+            plugin.getWaveComposer()
+        );
+
+        if (composition.getSelections().isEmpty()) {
+            plugin.getLogger().warning("[WaveManager] Composition vide pour la vague "
+                + waveNum + " (arène " + arena.getId() + "). Vague annulée.");
+            arena.startWaveProgress(0);
+            return;
+        }
+
+        WaveDifficultyProfile profile = plugin.getWaveDifficultyCalculator().calculate(
+            waveNum,
+            difficulty,
+            composition.getCategory(),
+            plugin.getArenaGameplayService().getSettings(arena.getId())
+        );
+
+        plugin.getMobSpawnService().spawnWaveComposition(arena, composition, profile);
+    }
+
+    /**
+     * Spawne tous les monstres d'une vague avec un délai entre chaque (système legacy).
+     */
+    private void spawnWaveLegacy(Arena arena, Wave wave) {
         int spawnDelay = plugin.getConfig().getInt("waves.spawn-delay", 10);
         List<Wave.WaveEntry> entries = wave.getEntries();
-        final int[] taskIndex = {0};
         final int[] entryIndex = {0};
         final int[] countInEntry = {0};
 

@@ -712,6 +712,9 @@ admin:
     gameplay-locations: "&eEmplacements Gameplay"
     gameplay-locations-lore1: "&7Spawns mobs, villageois, marchands,"
     gameplay-locations-lore2: "&8enchanteur, tours et pièges."
+    gameplay-system: "&dGameplay"
+    gameplay-system-lore1: "&7Difficulté, scaling des vagues,"
+    gameplay-system-lore2: "&8pools de mobs et overrides."
     options: "&7Options"
     options-lore1: "&7Prix, configs tours, schématics,"
     options-lore2: "&8panneaux et leaderboard."
@@ -1572,6 +1575,27 @@ gui:
     title: "§eEmplacements Gameplay"
   arena-options:
     title: "§7Options"
+  gameplay:
+    main:
+      title: "§dGameplay — Configuration"
+    difficulty:
+      title: "§bDifficulté"
+    wave-scaling:
+      title: "§aScaling des Vagues"
+    wave-categories:
+      title: "§dCatégories de Vagues"
+    wave-category-editor:
+      title: "§dÉditeur Catégorie"
+    mob-pools:
+      title: "§cPools de Mobs"
+    mob-pool-editor:
+      title: "§cÉditeur Pool"
+    mob-entry-editor:
+      title: "§cÉditeur Mob"
+    mob-selection:
+      title: "§eSélection de Mob"
+    wave-overrides:
+      title: "§eOverrides de Vague"
   shop-prices:
     title: "§6Prix du Shop"
   achievement-admin:

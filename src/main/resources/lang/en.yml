@@ -712,6 +712,9 @@ admin:
     gameplay-locations: "&eGameplay Locations"
     gameplay-locations-lore1: "&7Mob spawns, villagers, merchants,"
     gameplay-locations-lore2: "&8enchanter, towers and traps."
+    gameplay-system: "&dGameplay"
+    gameplay-system-lore1: "&7Difficulty, wave scaling,"
+    gameplay-system-lore2: "&8mob pools and overrides."
     options: "&7Options"
     options-lore1: "&7Prices, tower configs, schematics,"
     options-lore2: "&8signs and leaderboard."
@@ -1572,6 +1575,27 @@ gui:
     title: "§eGameplay Locations"
   arena-options:
     title: "§7Options"
+  gameplay:
+    main:
+      title: "§dGameplay — Configuration"
+    difficulty:
+      title: "§bDifficulty"
+    wave-scaling:
+      title: "§aWave Scaling"
+    wave-categories:
+      title: "§dWave Categories"
+    wave-category-editor:
+      title: "§dCategory Editor"
+    mob-pools:
+      title: "§cMob Pools"
+    mob-pool-editor:
+      title: "§cPool Editor"
+    mob-entry-editor:
+      title: "§cMob Editor"
+    mob-selection:
+      title: "§eMob Selection"
+    wave-overrides:
+      title: "§eWave Overrides"
   shop-prices:
     title: "§6Shop Prices"
   achievement-admin:

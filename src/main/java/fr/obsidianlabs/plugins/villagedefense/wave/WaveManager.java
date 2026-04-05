@@ -159,7 +159,8 @@ public class WaveManager {
         ArenaGameplaySettings gameplaySettings =
             plugin.getArenaGameplayService().getSettings(arena.getId());
 
-        if (gameplaySettings.getGeneralSettings().isUseAdvancedWaveSystem()) {
+        if (gameplaySettings.getGeneralSettings().isEnabled()
+                && gameplaySettings.getGeneralSettings().isUseAdvancedWaveSystem()) {
             spawnWaveAdvanced(arena, wave.getWaveNumber());
             return;
         }

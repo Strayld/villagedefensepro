@@ -23,10 +23,13 @@ public class ArenaGameplayService {
     }
 
     public ArenaGameplaySettings getSettings(String arenaId) {
-        return cache.computeIfAbsent(arenaId, id -> {
+        ArenaGameplaySettings settings = cache.computeIfAbsent(arenaId, id -> {
             ArenaGameplaySettings loaded = repository.load(id);
             return loaded != null ? loaded : ArenaGameplaySettings.createDefault();
         });
+        settings.getGeneralSettings().setEnabled(true);
+        settings.getGeneralSettings().setUseAdvancedWaveSystem(true);
+        return settings;
     }
 
     public void saveSettings(String arenaId) {

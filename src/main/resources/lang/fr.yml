@@ -712,7 +712,7 @@ admin:
     gameplay-locations: "&eEmplacements Gameplay"
     gameplay-locations-lore1: "&7Spawns mobs, villageois, marchands,"
     gameplay-locations-lore2: "&8enchanteur, tours et pièges."
-    gameplay-system: "&dGameplay"
+    gameplay-system: "&dCustomisation Vague"
     gameplay-system-lore1: "&7Difficulté, scaling des vagues,"
     gameplay-system-lore2: "&8pools de mobs et overrides."
     options: "&7Options"
@@ -1578,6 +1578,7 @@ gui:
   gameplay:
     main:
       title: "§dGameplay — Configuration"
+      composition: "§cComposition"
     difficulty:
       title: "§bDifficulté"
     wave-scaling:

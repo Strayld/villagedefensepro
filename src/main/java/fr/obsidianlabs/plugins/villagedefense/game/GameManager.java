@@ -256,12 +256,20 @@ public class GameManager {
 
     /** Retourne true si l'entité appartient au plugin (ne doit pas être supprimée). */
     private boolean isPluginEntity(Entity entity) {
-        return entity instanceof Player
-            || entity.hasMetadata(fr.obsidianlabs.plugins.villagedefense.wave.WaveManager.MOB_ARENA_META)
-            || entity.hasMetadata(VILLAGER_META)
-            || entity.hasMetadata(SHOP_VILLAGER_META)
-            || entity.hasMetadata(ENCHANT_VILLAGER_META)
-            || entity.hasMetadata(fr.obsidianlabs.plugins.villagedefense.perk.PerkManager.COMPANION_META);
+        if (entity instanceof Player) return true;
+        if (entity.hasMetadata(fr.obsidianlabs.plugins.villagedefense.wave.WaveManager.MOB_ARENA_META)) return true;
+        if (entity.hasMetadata(VILLAGER_META)) return true;
+        if (entity.hasMetadata(SHOP_VILLAGER_META)) return true;
+        if (entity.hasMetadata(ENCHANT_VILLAGER_META)) return true;
+        if (entity.hasMetadata(fr.obsidianlabs.plugins.villagedefense.perk.PerkManager.COMPANION_META)) return true;
+        // Fallback PDC — le Bukkit metadata peut être perdu sur les entités MythicMobs
+        // (wrapper CraftEntity différent entre spawn et getNearbyEntities).
+        // La PDC est stockée en NBT côté NMS et reste toujours cohérente.
+        if (entity instanceof LivingEntity le
+                && le.getPersistentDataContainer().has(
+                    plugin.getKey(fr.obsidianlabs.plugins.villagedefense.wave.WaveManager.MOB_ARENA_META),
+                    org.bukkit.persistence.PersistentDataType.STRING)) return true;
+        return false;
     }
 
     /**

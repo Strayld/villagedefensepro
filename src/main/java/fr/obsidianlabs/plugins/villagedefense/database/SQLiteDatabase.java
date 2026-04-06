@@ -182,69 +182,7 @@ public class SQLiteDatabase implements Database {
 
     @Override
     public CompletableFuture<List<LeaderboardEntry>> getTopPlayersByArena(int limit, String orderBy, String arenaId) {
-        String col = switch (orderBy) {
-            case "waves", "games" -> "s." + orderBy;
-            default -> "s.kills";
-        };
-        return CompletableFuture.supplyAsync(() -> {
-            List<LeaderboardEntry> list = new ArrayList<>();
-            String sql = "SELECT p.name, s.kills, s.waves, s.games " +
-                         "FROM vd_arena_stats s JOIN vd_players p ON s.uuid = p.uuid " +
-                         "WHERE s.arena_id = ? ORDER BY " + col + " DESC LIMIT ?";
-            try (Connection conn = dataSource.getConnection();
-                 PreparedStatement ps = conn.prepareStatement(sql)) {
-                ps.setString(1, arenaId);
-                ps.setInt(2, limit);
-                ResultSet rs = ps.executeQuery();
-                while (rs.next()) {
-                    list.add(new LeaderboardEntry(
-                        rs.getString("name"),
-                        rs.getInt("kills"),
-                        rs.getInt("waves"),
-                        rs.getInt("games"),
-                        0L
-                    ));
-                }
-            } catch (SQLException e) {
-                plugin.getLogger().log(Level.SEVERE, "[Database] Erreur leaderboard arène", e);
-            }
-            return list;
-        });
-    }
-
-    @Override
-    public void recordArenaKill(UUID uuid, String arenaId) {
-        CompletableFuture.runAsync(() -> execArenaUpsert(uuid, arenaId, "kills"));
-    }
-
-    @Override
-    public void recordArenaWave(UUID uuid, String arenaId) {
-        CompletableFuture.runAsync(() -> execArenaUpsert(uuid, arenaId, "waves"));
-    }
-
-    @Override
-    public void recordArenaGame(UUID uuid, String arenaId) {
-        CompletableFuture.runAsync(() -> execArenaUpsert(uuid, arenaId, "games"));
-    }
-
-    private void execArenaUpsert(UUID uuid, String arenaId, String col) {
-        // H2 ne supporte pas ON DUPLICATE KEY UPDATE — on utilise INSERT OR IGNORE puis UPDATE
-        String insert = "INSERT IGNORE INTO vd_arena_stats (uuid, arena_id, kills, waves, games) VALUES (?, ?, 0, 0, 0)";
-        String update = "UPDATE vd_arena_stats SET " + col + " = " + col + " + 1 WHERE uuid = ? AND arena_id = ?";
-        try (Connection conn = dataSource.getConnection()) {
-            try (PreparedStatement ps = conn.prepareStatement(insert)) {
-                ps.setString(1, uuid.toString());
-                ps.setString(2, arenaId);
-                ps.executeUpdate();
-            }
-            try (PreparedStatement ps = conn.prepareStatement(update)) {
-                ps.setString(1, uuid.toString());
-                ps.setString(2, arenaId);
-                ps.executeUpdate();
-            }
-        } catch (SQLException e) {
-            plugin.getLogger().log(Level.WARNING, "[Database] Erreur recordArena(" + col + ")", e);
-        }
+        return CompletableFuture.completedFuture(List.of());
     }
 
     // ── Tentatives par arène ──────────────────────────────────────────────────
@@ -291,8 +229,7 @@ public class SQLiteDatabase implements Database {
     @Override
     public void saveAttemptEntry(UUID uuid, String arenaId, int attemptsUsed, long windowStart) {
         CompletableFuture.runAsync(() -> {
-            // H2 : INSERT IGNORE puis UPDATE
-            String insert = "INSERT IGNORE INTO vd_arena_attempts (player_uuid, arena_id, attempts_used, window_start) VALUES (?, ?, ?, ?)";
+            String insert = "INSERT INTO vd_arena_attempts (player_uuid, arena_id, attempts_used, window_start) VALUES (?, ?, ?, ?) ON CONFLICT DO NOTHING";
             String update = "UPDATE vd_arena_attempts SET attempts_used = ?, window_start = ? WHERE player_uuid = ? AND arena_id = ?";
             try (Connection conn = dataSource.getConnection()) {
                 try (PreparedStatement ps = conn.prepareStatement(insert)) {

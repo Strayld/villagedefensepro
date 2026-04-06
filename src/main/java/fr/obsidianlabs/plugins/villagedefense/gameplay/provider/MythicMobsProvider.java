@@ -18,6 +18,7 @@ import org.bukkit.persistence.PersistentDataType;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 /**
  * Fournit les mobs définis dans MythicMobs au système de vagues avancé.
@@ -36,12 +37,19 @@ public class MythicMobsProvider implements MobProvider {
         return MobSource.MYTHICMOBS;
     }
 
+    private boolean isMythicAvailable() {
+        org.bukkit.plugin.Plugin mm = plugin.getServer().getPluginManager().getPlugin("MythicMobs");
+        return mm != null && mm.isEnabled();
+    }
+
     @Override
     public List<MobOption> getAvailableMobs() {
+        if (!isMythicAvailable()) return new ArrayList<>();
         List<MobOption> options = new ArrayList<>();
         for (MythicMob mob : MythicBukkit.inst().getMobManager().getMobTypes()) {
             String id = mob.getInternalName();
-            String display = stripColor(mob.getDisplayName().toString());
+            var displayName = mob.getDisplayName();
+            String display = displayName != null ? stripColor(displayName.toString()) : id;
             if (display.isBlank()) display = id;
             options.add(new MobOption(id, MobSource.MYTHICMOBS, display, "MythicMobs", Material.SPAWNER));
         }
@@ -50,11 +58,12 @@ public class MythicMobsProvider implements MobProvider {
 
     @Override
     public boolean canSpawn(MobEntry entry) {
-        return MythicBukkit.inst().getMobManager().getMythicMob(entry.getId()).isPresent();
+        return isMythicAvailable() && MythicBukkit.inst().getMobManager().getMythicMob(entry.getId()).isPresent();
     }
 
     @Override
     public SpawnResult spawn(Location location, MobEntry entry, WaveSpawnContext context) {
+        if (!isMythicAvailable()) return SpawnResult.fail("MythicMobs n'est pas disponible.");
         Optional<MythicMob> mobType = MythicBukkit.inst().getMobManager().getMythicMob(entry.getId());
         if (mobType.isEmpty()) {
             return SpawnResult.fail("Mob MythicMobs introuvable : " + entry.getId());
@@ -65,9 +74,16 @@ public class MythicMobsProvider implements MobProvider {
             return SpawnResult.fail("Échec du spawn MythicMobs pour : " + entry.getId());
         }
 
-        Entity entity = BukkitAdapter.adapt(activeMob.getEntity());
+        // Récupérer l'entité via Bukkit.getEntity() depuis l'UUID de l'ActiveMob,
+        // plus fiable que BukkitAdapter.adapt(activeMob.getEntity()) dont le wrapper
+        // CraftEntity peut différer de l'instance utilisée en jeu.
+        UUID spawnedUuid = activeMob.getUniqueId();
+        Entity entity = org.bukkit.Bukkit.getEntity(spawnedUuid);
+        if (entity == null) {
+            return SpawnResult.fail("Entité MythicMobs introuvable après spawn : " + entry.getId());
+        }
+
         if (!(entity instanceof LivingEntity mob)) {
-            // Entité non-vivante (ex : vex invoquée) — on la tag quand même
             entity.setMetadata(WaveManager.MOB_ARENA_META, new FixedMetadataValue(plugin, context.getArenaId()));
             return SpawnResult.ok(entity.getUniqueId());
         }

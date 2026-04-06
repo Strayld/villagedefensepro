@@ -712,7 +712,7 @@ admin:
     gameplay-locations: "&eGameplay Locations"
     gameplay-locations-lore1: "&7Mob spawns, villagers, merchants,"
     gameplay-locations-lore2: "&8enchanter, towers and traps."
-    gameplay-system: "&dGameplay"
+    gameplay-system: "&dWave Customization"
     gameplay-system-lore1: "&7Difficulty, wave scaling,"
     gameplay-system-lore2: "&8mob pools and overrides."
     options: "&7Options"
@@ -1578,6 +1578,7 @@ gui:
   gameplay:
     main:
       title: "§dGameplay — Configuration"
+      composition: "§cComposition"
     difficulty:
       title: "§bDifficulty"
     wave-scaling:

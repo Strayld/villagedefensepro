@@ -240,9 +240,7 @@ public class ArenaSetupGUI {
     }
 
     private ItemStack buildGameplaySystemButton(Arena arena) {
-        boolean enabled = plugin.getArenaGameplayService().getSettings(arena.getId())
-            .getGeneralSettings().isEnabled();
-        return new ItemBuilder(enabled ? Material.NETHER_STAR : Material.COMPARATOR)
+        return new ItemBuilder(Material.IRON_SWORD)
             .name(m("admin.setup.gameplay-system"))
             .lore(m("admin.setup.gameplay-system-lore1"),
                   m("admin.setup.gameplay-system-lore2"),

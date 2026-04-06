@@ -2,8 +2,8 @@ package fr.obsidianlabs.plugins.villagedefense.gameplay.model;
 
 public class GameplayGeneralSettings {
 
-    private boolean enabled              = false;
-    private boolean useAdvancedWaveSystem = false;
+    private boolean enabled              = true;
+    private boolean useAdvancedWaveSystem = true;
     private boolean allowWaveOverrides   = true;
     private boolean allowMythicMobs      = false;
 

@@ -712,7 +712,7 @@ admin:
     gameplay-locations: "&eGameplay-Positionen"
     gameplay-locations-lore1: "&7Mob-Spawns, Dorfbewohner, Händler,"
     gameplay-locations-lore2: "&8Verzauberer, Türme und Fallen."
-    gameplay-system: "&dGameplay"
+    gameplay-system: "&dWellen-Anpassung"
     gameplay-system-lore1: "&7Schwierigkeit, Wellenskalierung,"
     gameplay-system-lore2: "&8Mob-Pools und Überschreibungen."
     options: "&7Optionen"
@@ -1578,6 +1578,7 @@ gui:
   gameplay:
     main:
       title: "§dGameplay — Konfiguration"
+      composition: "§cKomposition"
     difficulty:
       title: "§bSchwierigkeit"
     wave-scaling:

@@ -79,8 +79,8 @@ public class GameplayConfigMapper {
 
     private GameplayGeneralSettings readGeneral(ConfigurationSection s) {
         GameplayGeneralSettings g = new GameplayGeneralSettings();
-        g.setEnabled(s.getBoolean("enabled", false));
-        g.setUseAdvancedWaveSystem(s.getBoolean("use-advanced-wave-system", false));
+        g.setEnabled(s.getBoolean("enabled", true));
+        g.setUseAdvancedWaveSystem(s.getBoolean("use-advanced-wave-system", true));
         g.setAllowWaveOverrides(s.getBoolean("allow-wave-overrides", true));
         g.setAllowMythicMobs(s.getBoolean("allow-mythicmobs", false));
         return g;

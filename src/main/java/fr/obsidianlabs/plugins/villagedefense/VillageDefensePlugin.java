@@ -86,6 +86,7 @@ import org.bukkit.NamespacedKey;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.permissions.Permission;
+import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.logging.Level;
@@ -227,7 +228,8 @@ public class VillageDefensePlugin extends JavaPlugin {
         // Gameplay system
         mobRegistryService = new MobRegistryService();
         mobRegistryService.registerProvider(new VanillaMobProvider(this));
-        if (getServer().getPluginManager().getPlugin("MythicMobs") != null) {
+        Plugin mythicPlugin = getServer().getPluginManager().getPlugin("MythicMobs");
+        if (mythicPlugin != null && mythicPlugin.isEnabled()) {
             mobRegistryService.registerProvider(new MythicMobsProvider(this));
             getLogger().info("[Gameplay] MythicMobs détecté — provider enregistré.");
         }

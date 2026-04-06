@@ -126,7 +126,7 @@ _(rien pour l'instant)_
 - **Rangée basse du GUI admin simplifiée** : 6 boutons réduits à 3 — Schématiques (col 2), Niveaux des Kits (col 5), Paramètres (col 8). Database, Langue, BungeeCord et Sync Réseau sont désormais regroupés dans `SettingsGUI`.
 - L'item BungeeCord dans `SettingsGUI` est renommé **Proxy** pour plus de clarté.
 - Schématiques : lore mis à jour pour préciser que les schématiques sont partagés entre toutes les arènes.
-- `FEATURES.txt` et `Wiki.md` réécrits pour documenter la surface complète du plugin.
+- `FEATURES.md` et `Wiki.md` réécrits pour documenter la surface complète du plugin.
 - Les succès débloqués d'un joueur sont maintenant stockés sous forme d'IDs texte (CSV) en base de données au lieu de valeurs d'enum, ce qui rend le système extensible sans migration.
 
 ### Fixed
@@ -147,7 +147,7 @@ _(rien pour l'instant)_
 - Le setup d'arene propose maintenant un vrai mode de disponibilite `Active / Test / Desactivee`.
 - La permission `villagedefense.test` permet de reserver les arenes en mode test aux joueurs autorises.
 - Un systeme de leaderboard flottant global peut maintenant etre place en option dans chaque arene via le setup GUI.
-- Un nouveau `FEATURES.txt` documente maintenant la surface publique a communiquer: API Bukkit, snapshots, event de progression et support PlaceholderAPI.
+- Un nouveau `FEATURES.md` documente maintenant la surface publique a communiquer: API Bukkit, snapshots, event de progression et support PlaceholderAPI.
 - Une vraie expansion PlaceholderAPI `%villagedefense_*%` est maintenant exposee avec des placeholders joueurs, arene courante, arene ciblee par ID et compteurs globaux.
 
 ### Changed
@@ -159,7 +159,7 @@ _(rien pour l'instant)_
 - Les integrations externes n'ont plus besoin de lire les classes internes du plugin : snapshots, metadonnees de succes et progression runtime passent maintenant par une surface API stable.
 - Les panneaux et la liste `/vd list` refletent maintenant le statut d'accessibilite des arenes, avec masquage des arenes desactivees et exposition des arenes de test aux seuls testeurs.
 - Les arenes peuvent maintenant afficher un hologramme de classement global alimente par la base de donnees, avec rotation automatique entre kills, vagues et parties.
-- `FEATURES.txt` et `PUBLIC_API.md` documentent maintenant explicitement la syntaxe PlaceholderAPI publique a communiquer aux integrateurs et packagers.
+- `FEATURES.md` et `PUBLIC_API.md` documentent maintenant explicitement la syntaxe PlaceholderAPI publique a communiquer aux integrateurs et packagers.
 
 ### Fixed
 

@@ -47,7 +47,7 @@ villagedefense/
 ├── powerup/        Power-ups dropant pendant les vagues
 ├── shop/           Shop in-game
 ├── player/         Données joueur (VDPlayer, PlayerManager)
-├── database/       SQLite / MySQL
+├── database/       H2 local / MySQL
 ├── achievement/    Système d'achievements
 ├── leaderboard/    Affichage du classement
 ├── network/        Sync BungeeCord
@@ -67,7 +67,7 @@ villagedefense/
 | Settings Gameplay avancé | `arenas/<id>_gameplay.yml` |
 | Config générale | `config.yml` |
 | Messages / traductions | `lang/<code>.yml` |
-| Données joueur, stats, achievements | Base de données (SQLite ou MySQL) |
+| Données joueur, stats, achievements | Base de données (H2 local ou MySQL) |
 | Difficulté de session | Runtime uniquement (non persisté) |
 
 ---
@@ -135,13 +135,13 @@ Depuis le GUI Setup → **Options** :
 | Limite de tentatives | N essais par fenêtre de X heures par joueur |
 | Récompenses | Commandes console et dépôt Vault en fin de partie |
 
-### Étape 5 — Chemins Waypoints (recommandé)
+### Étape 5 — Emplacements Gameplay
 
-GUI Setup → **Chemins** : créez des chemins de waypoints pour guider les mobs vers les villageois. Voir §11.
+GUI Setup → **Emplacements Gameplay** : configurez les spawns mobs, spawns villageois, marchand, enchanteur, tours, pièges et chemins. Les chemins de waypoints se gèrent depuis ce sous-GUI. Voir §11.
 
-### Étape 6 — Gameplay System (optionnel)
+### Étape 6 — Customisation Vague
 
-GUI Setup → **Gameplay** : configurez le système de vagues avancé avec difficulté, pools de mobs et overrides. Voir §10.
+GUI Setup → **Customisation Vague** : configurez le système de vagues avancé avec difficulté, composition, catégories, scaling et overrides. Voir §10.
 
 ### Ordre de setup recommandé
 
@@ -154,8 +154,8 @@ GUI Setup → **Gameplay** : configurez le système de vagues avancé avec diffi
 7. Emplacements tours
 8. Emplacements pièges
 9. Coffre shop, Marchand, Enchanteur
-10. Chemins Waypoints
-11. Gameplay System
+10. Emplacements Gameplay
+11. Customisation Vague
 12. Disponibilité → `TEST`
 13. Sauvegarder → tester → passer en `ACTIVE`
 
@@ -328,18 +328,19 @@ Les prix des enchantements sont configurables par arène via GUI Setup → **Pri
 
 ## 10. Système Gameplay Avancé
 
-Le Gameplay System remplace le système de vagues legacy par une architecture entièrement configurable par arène. Il se configure via GUI Admin → Setup arène → **Gameplay**.
+Le système avancé de vagues remplace le système legacy par une architecture entièrement configurable par arène. Il se configure via GUI Admin → Setup arène → **Customisation Vague**.
 
-### Activation
+### Accès au GUI
 
-GUI Gameplay → **Général** :
+Le `GameplayMainGUI` expose directement :
 
-```yaml
-enabled: true
-useAdvancedWaveSystem: true
-```
+- **Difficulté**
+- **Scaling des vagues**
+- **Catégories de vagues**
+- **Composition**
+- **Overrides de vague**
 
-Si l'un des deux est `false`, le système legacy (`config.yml`) est utilisé.
+Le système avancé est désormais activé par défaut et n'est plus exposé comme une option de bascule dans le GUI principal.
 
 ### Difficulté
 
@@ -369,7 +370,7 @@ La catégorie est résolue automatiquement par le `WaveCategoryResolver` selon l
 
 ### Mob Pools
 
-Un **Mob Pool** est une liste de `MobEntry` configurée via GUI Gameplay → **Mob Pools**.
+Un **Mob Pool** est une liste de `MobEntry` configurée via GUI Gameplay → **Composition**.
 
 Chaque `MobEntry` définit :
 
@@ -397,11 +398,11 @@ Une **override** force une configuration spécifique pour une vague précise.
 
 Exemple : vague 25 = toujours une vague BOSS avec un pool dédié, indépendamment du resolver.
 
-Se configure via GUI Gameplay → **Wave Overrides**.
+Se configure via GUI Gameplay → **Overrides de vague**.
 
 ### Wave Scaling
 
-Définit l'évolution des multiplicateurs (HP, dégâts, vitesse, budget) en fonction du numéro de vague. Configurable via GUI Gameplay → **Wave Scaling**.
+Définit l'évolution des multiplicateurs (HP, dégâts, vitesse, budget) en fonction du numéro de vague. Configurable via GUI Gameplay → **Scaling des vagues**.
 
 ### Intégration MythicMobs
 
@@ -423,7 +424,7 @@ Le système Waypoints guide les mobs le long de chemins prédéfinis vers les vi
 
 ### Comment ça fonctionne
 
-1. **Configuration** : l'admin définit un ou plusieurs **chemins** (séquence ordonnée de points) associés aux spawners via GUI Setup → **Chemins**.
+1. **Configuration** : l'admin définit un ou plusieurs **chemins** (séquence ordonnée de points) associés aux spawners via GUI Setup → **Emplacements Gameplay** → **Chemins**.
 2. **Au spawn** : chaque mob reçoit un `PathGuide` basé sur le chemin de son spawner.
 3. **Tick (toutes les 5 ticks / 250 ms)** : le `WaypointGuideManager` déplace un **ArmorStand invisible** de 0,3 blocs vers le prochain waypoint du chemin.
 4. **Ciblage IA** : le mob cible l'ArmorStand. Comme ce dernier avance pas à pas, le mob le suit naturellement le long du chemin.
@@ -450,14 +451,13 @@ Dans `config.yml` :
 
 ```yaml
 database:
-  type: sqlite        # 'sqlite' ou 'mysql'
-  mysql:
-    host: localhost
-    port: 3306
-    database: villagedefense
-    username: root
-    password: ""
-    use-ssl: false
+  type: SQLITE  # SQLITE (backend local H2) ou MYSQL
+  host: localhost
+  port: 3306
+  name: villagedefense
+  username: root
+  password: ''
+  pool-size: 10
 ```
 
 Le GUI Admin → **Base de Données** permet de modifier ces paramètres in-game.
@@ -477,8 +477,18 @@ Le GUI Admin → **Base de Données** permet de modifier ces paramètres in-game
 
 ### Recommandation
 
-- **SQLite** : parfait pour un serveur standalone. Aucune configuration supplémentaire.
+- **H2 local** : parfait pour un serveur standalone. Aucune configuration supplémentaire.
 - **MySQL** : recommandé pour un réseau multi-serveurs ou si vous avez besoin de backups centralisés.
+
+### Note importante sur les stats par arène
+
+Les statistiques dédiées au classement **par arène** (`vd_arena_stats`) sont utilisées en mode **MySQL**.
+
+En backend local `SQLITE`/H2 :
+
+- les données joueur globales restent persistées normalement
+- les stats spécifiques au leaderboard par arène sont ignorées proprement
+- cela évite les warnings SQL sur le backend local
 
 ---
 
@@ -493,7 +503,8 @@ Dans `config.yml` :
 ```yaml
 network:
   enabled: true
-  server-name: "survival-1"
+  server-id: "survival-1"
+  sync-interval: 10
 ```
 
 GUI Admin → **Réseau** expose les options de synchronisation.
@@ -561,7 +572,7 @@ Accessible via `/vd top`. Classe les joueurs par kills totaux par défaut.
 Affichage :
 - **GUI Inventory** paginé (`/vd top`)
 - **Hologramme flottant global** (configurable dans ArenaOptionsGUI — classement toutes arènes confondues, rotation automatique kills/vagues/parties)
-- **Hologramme flottant par arène** (classement propre à l'arène, table `vd_arena_stats`)
+- **Hologramme flottant par arène** (classement propre à l'arène, disponible en pratique avec le backend MySQL)
 
 ---
 
@@ -777,7 +788,7 @@ Sans sous-commande : ouvre le GUI d'administration principal (joueur uniquement)
 **Cause** : aucun chemin waypoint défini pour ce spawner, ou le `WaypointGuideManager` n'a pas démarré.
 
 **Solution** :
-1. Définissez des chemins via GUI Setup → **Chemins** et associez-les aux spawners.
+1. Définissez des chemins via GUI Setup → **Emplacements Gameplay** → **Chemins** et associez-les aux spawners.
 2. Vérifiez les logs de démarrage — la ligne `[WaypointGuideManager] Démarré` doit être présente.
 3. Évitez `/reload` — préférez un redémarrage complet du serveur.
 
@@ -785,9 +796,12 @@ Sans sous-commande : ouvre le GUI d'administration principal (joueur uniquement)
 
 ### Le système avancé de vagues n'est pas utilisé
 
-**Cause** : `enabled` ou `useAdvancedWaveSystem` est `false` dans les settings de l'arène.
+**Cause** : ancienne configuration d'arène, mauvais setup gameplay, ou problème de données chargées.
 
-**Solution** : GUI Admin → Setup arène → **Gameplay** → **Général** → activer les deux options.
+**Solution** :
+1. Ouvrez GUI Admin → Setup arène → **Customisation Vague**.
+2. Vérifiez que la difficulté, la composition et les catégories sont bien configurées.
+3. Si besoin, réinitialisez les settings gameplay de l'arène puis reconfigurez-les.
 
 ---
 
@@ -837,4 +851,6 @@ Les données sont sauvegardées à la déconnexion et en fin de partie. Un crash
 
 ---
 
-*VillageDefensePro — ObsidianLabs — v1.1.0*
+Consultez aussi [FEATURES.md](FEATURES.md) pour la liste structurée des fonctionnalités.
+
+*VillageDefensePro — ObsidianLabs — v1.3*

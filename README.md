@@ -19,7 +19,7 @@ Défendez le village contre des vagues de monstres de plus en plus puissantes. C
 - **Shop in-game** avec prix configurables via GUI admin
 - **Système Waypoints** : les mobs suivent des chemins définis par ArmorStands invisibles
 - **Achievements** entièrement configurables via GUI admin
-- **Leaderboard & Stats joueur** persistés en SQLite ou MySQL
+- **Leaderboard & Stats joueur** persistés en H2 local ou MySQL
 - **PlaceholderAPI** avec 30+ placeholders
 - **API publique** (events, snapshots) pour intégrations tierces
 - **Support MythicMobs** : intégrez vos mobs custom directement dans les vagues
@@ -131,6 +131,8 @@ Alias : `/vda`
 
 Consultez [Wiki.md](Wiki.md) pour la documentation exhaustive :
 systèmes de jeu, gameplay avancé, MythicMobs, waypoints, API, placeholders, base de données, BungeeCord et plus encore.
+
+Consultez aussi [FEATURES.md](FEATURES.md) pour un résumé structuré de toutes les fonctionnalités du plugin.
 
 ---
 

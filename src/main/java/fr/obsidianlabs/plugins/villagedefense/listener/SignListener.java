@@ -15,6 +15,9 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.block.Action;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * Gère les panneaux d'arène :
  *  - Clic droit → rejoindre (lobby) ou regarder (partie en cours)
@@ -23,10 +26,26 @@ import org.bukkit.event.block.Action;
 public class SignListener implements Listener {
 
     private final VillageDefensePlugin plugin;
+    /** Index O(1) : clé = "world,x,y,z" → arène. Reconstruit au démarrage et après chaque modification de panneau. */
+    private final Map<String, Arena> signIndex = new HashMap<>();
 
     public SignListener(VillageDefensePlugin plugin) {
         this.plugin = plugin;
+        rebuildSignIndex();
         startSignUpdateTask();
+    }
+
+    /** Reconstruit l'index depuis toutes les arènes chargées (appelé au démarrage et au reload). */
+    public void rebuildSignIndex() {
+        signIndex.clear();
+        for (Arena arena : plugin.getArenaManager().getAllArenas()) {
+            Location loc = arena.getSignLocation();
+            if (loc != null) signIndex.put(locationKey(loc), arena);
+        }
+    }
+
+    private static String locationKey(Location loc) {
+        return loc.getWorld().getName() + "," + loc.getBlockX() + "," + loc.getBlockY() + "," + loc.getBlockZ();
     }
 
     // ---- Clic droit sur un panneau ----
@@ -106,7 +125,9 @@ public class SignListener implements Listener {
     private void updateAllSigns() {
         for (Arena arena : plugin.getArenaManager().getAllArenas()) {
             Location signLoc = arena.getSignLocation();
-            if (signLoc == null) continue;
+            if (signLoc == null || signLoc.getWorld() == null) continue;
+            // Ne pas charger le chunk si non chargé (évite I/O disk inutile)
+            if (!signLoc.getWorld().isChunkLoaded(signLoc.getBlockX() >> 4, signLoc.getBlockZ() >> 4)) continue;
             Block block = signLoc.getBlock();
             if (!(block.getState() instanceof Sign sign)) continue;
             updateSign(sign, arena);
@@ -169,17 +190,7 @@ public class SignListener implements Listener {
     // ---- Helper ----
 
     private Arena findArenaBySign(Location loc) {
-        for (Arena arena : plugin.getArenaManager().getAllArenas()) {
-            Location signLoc = arena.getSignLocation();
-            if (signLoc != null && isSameBlock(signLoc, loc)) return arena;
-        }
-        return null;
-    }
-
-    private boolean isSameBlock(Location a, Location b) {
-        if (a.getWorld() == null || !a.getWorld().equals(b.getWorld())) return false;
-        return a.getBlockX() == b.getBlockX()
-            && a.getBlockY() == b.getBlockY()
-            && a.getBlockZ() == b.getBlockZ();
+        if (loc.getWorld() == null) return null;
+        return signIndex.get(locationKey(loc));
     }
 }

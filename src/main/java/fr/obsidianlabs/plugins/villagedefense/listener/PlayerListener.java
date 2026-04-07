@@ -667,20 +667,9 @@ public class PlayerListener implements Listener {
         if (arena == null || !arena.hasBounds()) return;
         if (arena.getState() != ArenaState.RUNNING && arena.getState() != ArenaState.BETWEEN_WAVES) return;
 
-        Location to   = event.getTo();
-        Location pos1 = arena.getPos1();
-        Location pos2 = arena.getPos2();
+        Location to = event.getTo();
 
-        int minX = Math.min(pos1.getBlockX(), pos2.getBlockX());
-        int maxX = Math.max(pos1.getBlockX(), pos2.getBlockX());
-        int minY = Math.min(pos1.getBlockY(), pos2.getBlockY());
-        int maxY = Math.max(pos1.getBlockY(), pos2.getBlockY());
-        int minZ = Math.min(pos1.getBlockZ(), pos2.getBlockZ());
-        int maxZ = Math.max(pos1.getBlockZ(), pos2.getBlockZ());
-
-        if (to.getX() < minX || to.getX() > maxX + 1
-         || to.getY() < minY || to.getY() > maxY + 1
-         || to.getZ() < minZ || to.getZ() > maxZ + 1) {
+        if (!arena.isPositionInsideBounds(to)) {
             event.setCancelled(true);
             if (arena.getBoundaryMode() == fr.obsidianlabs.plugins.villagedefense.arena.ArenaBoundaryMode.TP_CENTER
                     && arena.getVillageCenter() != null) {

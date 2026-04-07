@@ -91,9 +91,10 @@ public class WaypointGuideManager {
     }
 
     private void tick() {
-        for (var arenaEntry : new HashMap<>(activeGuides).entrySet()) {
-            for (var guideEntry : new HashMap<>(arenaEntry.getValue()).entrySet()) {
-                guideEntry.getValue().tick();
+        // Tout s'exécute sur le thread principal Bukkit → pas de risque de CME
+        for (var arenaEntry : activeGuides.entrySet()) {
+            for (var guide : arenaEntry.getValue().values()) {
+                guide.tick();
             }
         }
     }

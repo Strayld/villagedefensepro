@@ -108,6 +108,11 @@ public class GameManager {
         this.sbManager = new ScoreboardManager(plugin);
     }
 
+    /** Appelé à chaque /vda reload pour rafraîchir les valeurs de config mises en cache. */
+    public void reloadConfig() {
+        sbManager.reloadConfig();
+    }
+
     // ═══════════════════════════════════════════════════════════════════════
     // LOBBY
     // ═══════════════════════════════════════════════════════════════════════

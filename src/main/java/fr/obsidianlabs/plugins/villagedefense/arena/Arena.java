@@ -20,6 +20,8 @@ public class Arena {
     private Location villageCenter;
     private Location pos1;                // coin 1 des limites de l'arène
     private Location pos2;                // coin 2 des limites de l'arène
+    // Bounds précalculés — mis à jour par setPos1/setPos2 pour éviter Math.min/max à chaque check
+    private int cachedMinX, cachedMaxX, cachedMinY, cachedMaxY, cachedMinZ, cachedMaxZ;
     private Location shopChestLocation;   // coffre double = source du shop
     /** Prix par slot de coffre (clé = index dans le coffre, valeur = pièces). */
     private final Map<Integer, Long> shopItemPrices   = new HashMap<>();
@@ -123,10 +125,39 @@ public class Arena {
     public void setVillageCenter(Location loc) { this.villageCenter = loc; }
 
     public Location getPos1() { return pos1; }
-    public void setPos1(Location loc) { this.pos1 = loc; }
+    public void setPos1(Location loc) { this.pos1 = loc; recalcBounds(); }
     public Location getPos2() { return pos2; }
-    public void setPos2(Location loc) { this.pos2 = loc; }
+    public void setPos2(Location loc) { this.pos2 = loc; recalcBounds(); }
     public boolean hasBounds() { return pos1 != null && pos2 != null; }
+
+    private void recalcBounds() {
+        if (pos1 == null || pos2 == null) return;
+        cachedMinX = Math.min(pos1.getBlockX(), pos2.getBlockX());
+        cachedMaxX = Math.max(pos1.getBlockX(), pos2.getBlockX());
+        cachedMinY = Math.min(pos1.getBlockY(), pos2.getBlockY());
+        cachedMaxY = Math.max(pos1.getBlockY(), pos2.getBlockY());
+        cachedMinZ = Math.min(pos1.getBlockZ(), pos2.getBlockZ());
+        cachedMaxZ = Math.max(pos1.getBlockZ(), pos2.getBlockZ());
+    }
+
+    /** Vérifie si une location est à l'intérieur des bornes de l'arène (bounds précalculés). */
+    public boolean isInsideBounds(Location loc) {
+        if (!hasBounds()) return false;
+        if (!loc.getWorld().equals(pos1.getWorld())) return false;
+        int bx = loc.getBlockX(), by = loc.getBlockY(), bz = loc.getBlockZ();
+        return bx >= cachedMinX && bx <= cachedMaxX
+            && by >= cachedMinY && by <= cachedMaxY
+            && bz >= cachedMinZ && bz <= cachedMaxZ;
+    }
+
+    /** Vérifie si une position (double) est à l'intérieur des bornes (pour PlayerMoveEvent). */
+    public boolean isPositionInsideBounds(Location loc) {
+        if (!hasBounds()) return false;
+        if (!loc.getWorld().equals(pos1.getWorld())) return false;
+        return loc.getX() >= cachedMinX && loc.getX() <= cachedMaxX + 1
+            && loc.getY() >= cachedMinY && loc.getY() <= cachedMaxY + 1
+            && loc.getZ() >= cachedMinZ && loc.getZ() <= cachedMaxZ + 1;
+    }
 
     public Location getShopChestLocation() { return shopChestLocation; }
     public void setShopChestLocation(Location loc) { this.shopChestLocation = loc; }

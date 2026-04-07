@@ -3,6 +3,7 @@ package fr.obsidianlabs.plugins.villagedefense.gameplay.service;
 import fr.obsidianlabs.plugins.villagedefense.gameplay.model.*;
 
 import java.util.*;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
@@ -97,22 +98,20 @@ public class WaveComposer {
     private List<MobEntry> weightedSample(List<MobEntry> entries, int count) {
         List<MobEntry> pool = new ArrayList<>(entries);
         List<MobEntry> result = new ArrayList<>();
-        Random rng = new Random();
 
         for (int i = 0; i < count && !pool.isEmpty(); i++) {
             int totalWeight = pool.stream().mapToInt(MobEntry::getWeight).sum();
-            int roll = rng.nextInt(totalWeight);
+            int roll = ThreadLocalRandom.current().nextInt(totalWeight);
             int cumul = 0;
-            MobEntry chosen = pool.get(0);
-            for (MobEntry e : pool) {
-                cumul += e.getWeight();
+            int chosenIndex = 0;
+            for (int j = 0; j < pool.size(); j++) {
+                cumul += pool.get(j).getWeight();
                 if (roll < cumul) {
-                    chosen = e;
+                    chosenIndex = j;
                     break;
                 }
             }
-            result.add(chosen);
-            pool.remove(chosen);
+            result.add(pool.remove(chosenIndex)); // O(1) index remove
         }
         return result;
     }
@@ -123,12 +122,11 @@ public class WaveComposer {
     private List<WaveMobSelection> buildSelections(List<MobEntry> chosen, double budget) {
         List<WaveMobSelection> result = new ArrayList<>();
         double remaining = budget;
-        Random rng = new Random();
 
         for (MobEntry e : chosen) {
             if (remaining <= 0) break;
 
-            int amount = e.getMinAmount() + rng.nextInt(Math.max(1, e.getMaxAmount() - e.getMinAmount() + 1));
+            int amount = e.getMinAmount() + ThreadLocalRandom.current().nextInt(Math.max(1, e.getMaxAmount() - e.getMinAmount() + 1));
             double cost = amount * e.getThreat();
 
             // Ajuster si on dépasse trop le budget (max 20% de dépassement)

@@ -124,6 +124,8 @@ public class VillageDefensePlugin extends JavaPlugin {
     private WaypointGuideManager waypointGuideManager;
     private LeaderboardDisplayManager leaderboardDisplayManager;
     private NetworkSyncManager networkSyncManager;
+    private ArenaListener arenaListener;
+    private SignListener signListener;
 
     // GUIs
     private ArenaPathsGUI arenaPathsGui;
@@ -452,9 +454,11 @@ public class VillageDefensePlugin extends JavaPlugin {
     private void registerListeners() {
         var pm = getServer().getPluginManager();
         pm.registerEvents(new PlayerListener(this), this);
-        pm.registerEvents(new ArenaListener(this), this);
+        arenaListener = new ArenaListener(this);
+        pm.registerEvents(arenaListener, this);
         pm.registerEvents(new InventoryCloseListener(this), this);
-        pm.registerEvents(new SignListener(this), this);
+        signListener = new SignListener(this);
+        pm.registerEvents(signListener, this);
     }
 
     private void registerCommands() {
@@ -571,6 +575,14 @@ public class VillageDefensePlugin extends JavaPlugin {
 
     public ArenaManager getArenaManager() {
         return arenaManager;
+    }
+
+    public ArenaListener getArenaListener() {
+        return arenaListener;
+    }
+
+    public SignListener getSignListener() {
+        return signListener;
     }
 
     public PlayerManager getPlayerManager() {

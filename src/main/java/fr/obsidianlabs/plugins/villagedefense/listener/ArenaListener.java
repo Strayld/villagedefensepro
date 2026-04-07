@@ -22,6 +22,10 @@ import org.bukkit.event.entity.FoodLevelChangeEvent;
 import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.projectiles.ProjectileSource;
 
+import org.bukkit.entity.EntityType;
+
+import java.util.EnumMap;
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -31,8 +35,26 @@ public class ArenaListener implements Listener {
 
     private final VillageDefensePlugin plugin;
 
+    // Cache des récompenses en pièces — chargé une fois au démarrage / rechargement
+    private final Map<EntityType, Long> coinRewardCache = new EnumMap<>(EntityType.class);
+
     public ArenaListener(VillageDefensePlugin plugin) {
         this.plugin = plugin;
+        reloadRewardCache();
+    }
+
+    /** Appelé à chaque /vda reload pour rafraîchir les récompenses depuis config.yml. */
+    public void reloadRewardCache() {
+        coinRewardCache.clear();
+        coinRewardCache.put(EntityType.ZOMBIE,        plugin.getConfig().getLong("coins.zombie",   5));
+        coinRewardCache.put(EntityType.SKELETON,      plugin.getConfig().getLong("coins.skeleton",  5));
+        coinRewardCache.put(EntityType.SPIDER,        plugin.getConfig().getLong("coins.spider",    5));
+        coinRewardCache.put(EntityType.WOLF,          plugin.getConfig().getLong("coins.wolf",      5));
+        coinRewardCache.put(EntityType.CREEPER,       plugin.getConfig().getLong("coins.creeper",   5));
+        coinRewardCache.put(EntityType.WITCH,         plugin.getConfig().getLong("coins.witch",     5));
+        coinRewardCache.put(EntityType.RAVAGER,       plugin.getConfig().getLong("coins.boss",     15));
+        coinRewardCache.put(EntityType.ELDER_GUARDIAN,plugin.getConfig().getLong("coins.boss",     15));
+        coinRewardCache.put(EntityType.WITHER,        plugin.getConfig().getLong("coins.boss",     15));
     }
 
     // ---- Casser des blocs interdit en arène ----
@@ -96,7 +118,12 @@ public class ArenaListener implements Listener {
             if (vdp != null) {
                 vdp.addCoins(reward);
                 vdp.addKill();
-                if (plugin.getDatabase() != null) plugin.getDatabase().recordArenaKill(killer.getUniqueId(), arena.getId());
+                if (plugin.getDatabase() != null) {
+                    final UUID killerUuid = killer.getUniqueId();
+                    final String arenaId  = arena.getId();
+                    org.bukkit.Bukkit.getScheduler().runTaskAsynchronously(plugin,
+                        () -> plugin.getDatabase().recordArenaKill(killerUuid, arenaId));
+                }
                 plugin.fireProgress(
                     killer,
                     arena,
@@ -124,7 +151,7 @@ public class ArenaListener implements Listener {
     private void clearDropsIfInArena(EntityDeathEvent event, LivingEntity entity) {
         for (Arena a : plugin.getArenaManager().getAllArenas()) {
             if ((a.getState() == ArenaState.RUNNING || a.getState() == ArenaState.BETWEEN_WAVES)
-                    && a.hasBounds() && isInsideBounds(a, entity.getLocation())) {
+                    && a.isInsideBounds(entity.getLocation())) {
                 event.getDrops().clear();
                 event.setDroppedExp(0);
                 return;
@@ -260,10 +287,9 @@ public class ArenaListener implements Listener {
 
             // CLUSTER : 3 mini-explosions décalées autour de l'impact
             if (isCluster) {
-                java.util.Random rng = new java.util.Random();
                 for (int i = 1; i <= 3; i++) {
-                    double ox = (rng.nextDouble() - 0.5) * 6;
-                    double oz = (rng.nextDouble() - 0.5) * 6;
+                    double ox = (ThreadLocalRandom.current().nextDouble() - 0.5) * 6;
+                    double oz = (ThreadLocalRandom.current().nextDouble() - 0.5) * 6;
                     Location miniLoc = impactLoc.clone().add(ox, 0, oz);
                     double miniDmg   = damage * 0.35;
                     double miniRadSq = 9.0; // 3 blocs
@@ -296,7 +322,8 @@ public class ArenaListener implements Listener {
     public void onBlockExplode(org.bukkit.event.block.BlockExplodeEvent event) {
         for (Arena arena : plugin.getArenaManager().getAllArenas()) {
             if ((arena.getState() == ArenaState.RUNNING || arena.getState() == ArenaState.BETWEEN_WAVES)
-                && arena.getLobbyLocation() != null
+                && arena.getLobbyLocation() != null                              // guard NPE
+                && arena.getLobbyLocation().getWorld() != null
                 && arena.getLobbyLocation().getWorld().equals(event.getBlock().getWorld())) {
                 event.blockList().clear();
                 return;
@@ -342,8 +369,7 @@ public class ArenaListener implements Listener {
         org.bukkit.Location loc = event.getLocation();
         for (Arena arena : plugin.getArenaManager().getAllArenas()) {
             if (arena.getState() != ArenaState.RUNNING && arena.getState() != ArenaState.BETWEEN_WAVES) continue;
-            if (!arena.hasBounds()) continue;
-            if (isInsideBounds(arena, loc)) {
+            if (arena.isInsideBounds(loc)) {
                 event.setCancelled(true);
                 return;
             }
@@ -466,25 +492,16 @@ public class ArenaListener implements Listener {
         return arena;
     }
 
-    private boolean isInsideBounds(Arena arena, org.bukkit.Location loc) {
-        org.bukkit.Location p1 = arena.getPos1(), p2 = arena.getPos2();
-        if (!loc.getWorld().equals(p1.getWorld())) return false;
-        int minX = Math.min(p1.getBlockX(), p2.getBlockX()), maxX = Math.max(p1.getBlockX(), p2.getBlockX());
-        int minY = Math.min(p1.getBlockY(), p2.getBlockY()), maxY = Math.max(p1.getBlockY(), p2.getBlockY());
-        int minZ = Math.min(p1.getBlockZ(), p2.getBlockZ()), maxZ = Math.max(p1.getBlockZ(), p2.getBlockZ());
-        int bx = loc.getBlockX(), by = loc.getBlockY(), bz = loc.getBlockZ();
-        return bx >= minX && bx <= maxX && by >= minY && by <= maxY && bz >= minZ && bz <= maxZ;
-    }
-
     /**
      * Retourne true si l'entité est une entité alliée qui ne doit pas être
      * blessée par les attaques des tours (flèches, TNT) :
      * joueurs, villageois, golems de fer et compagnons (loups / golems d'atout).
      */
     private boolean isFriendly(Entity entity) {
-        if (entity instanceof Player || entity instanceof Villager || entity instanceof IronGolem) return true;
-        if (entity.hasMetadata(fr.obsidianlabs.plugins.villagedefense.perk.PerkManager.COMPANION_META)) return true;
-        return false;
+        return entity instanceof Player
+            || entity instanceof Villager
+            || entity instanceof IronGolem
+            || entity.hasMetadata(fr.obsidianlabs.plugins.villagedefense.perk.PerkManager.COMPANION_META);
     }
 
     /**
@@ -509,17 +526,7 @@ public class ArenaListener implements Listener {
     }
 
     private long getMobReward(LivingEntity mob, int wave) {
-        String key = switch (mob.getType()) {
-            case ZOMBIE -> "zombie";
-            case SKELETON -> "skeleton";
-            case SPIDER -> "spider";
-            case WOLF -> "wolf";
-            case CREEPER -> "creeper";
-            case WITCH -> "witch";
-            case RAVAGER, ELDER_GUARDIAN, WITHER -> "boss";
-            default -> "zombie";
-        };
-        long base = plugin.getConfig().getLong("coins." + key, 5);
+        long base = coinRewardCache.getOrDefault(mob.getType(), coinRewardCache.getOrDefault(EntityType.ZOMBIE, 5L));
         return Math.round(base * (1.0 + (wave - 1) * 0.10));
     }
 

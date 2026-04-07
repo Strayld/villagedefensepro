@@ -41,9 +41,16 @@ class ScoreboardManager {
     private final Map<UUID, Scoreboard> boards      = new HashMap<>();
     private final Map<UUID, Scoreboard> lobbyBoards = new HashMap<>();
     private final Map<UUID, Scoreboard> specBoards  = new HashMap<>();
+    private int cachedMaxLives;
 
     ScoreboardManager(VillageDefensePlugin plugin) {
         this.plugin = plugin;
+        reloadConfig();
+    }
+
+    /** Appelé au rechargement pour rafraîchir les valeurs depuis config.yml. */
+    void reloadConfig() {
+        cachedMaxLives = plugin.getConfig().getInt("game.village-lives", 10);
     }
 
     // ── Lobby ─────────────────────────────────────────────────────────────────
@@ -125,7 +132,6 @@ class ScoreboardManager {
         VDPlayer vdp  = plugin.getPlayerManager().getPlayer(player);
         long coins    = vdp != null ? vdp.getCoins() : 0;
         int  level    = vdp != null ? vdp.getLevel()  : 1;
-        int maxLives  = plugin.getConfig().getInt("game.village-lives", 10);
 
         var msg = plugin.getMessages();
         String state = switch (arena.getState()) {
@@ -139,7 +145,7 @@ class ScoreboardManager {
         setLine(sb, 8, msg.format(player, "scoreboard.sb-wave", Math.max(1, arena.getCurrentWave())));
         setLine(sb, 7, msg.format(player, "scoreboard.sb-state", state));
         setLine(sb, 6, msg.format(player, "scoreboard.sb-mobs", arena.getWaveRemainingMobCount()));
-        setLine(sb, 5, msg.format(player, "scoreboard.sb-lives", arena.getVillageLives(), maxLives));
+        setLine(sb, 5, msg.format(player, "scoreboard.sb-lives", arena.getVillageLives(), cachedMaxLives));
         setLine(sb, 4, msg.format(player, "scoreboard.sb-players", arena.getPlayerCount(), arena.getMaxPlayers()));
         setLine(sb, 3, msg.format(player, "scoreboard.separator"));
         setLine(sb, 2, msg.format(player, "scoreboard.sb-coins", coins));
@@ -176,7 +182,6 @@ class ScoreboardManager {
         Scoreboard sb = specBoards.get(player.getUniqueId());
         if (sb == null) return;
 
-        int maxLives = plugin.getConfig().getInt("game.village-lives", 10);
         var msg = plugin.getMessages();
         String state = switch (arena.getState()) {
             case BETWEEN_WAVES -> msg.format(player, "scoreboard.state-between-waves", arena.getBetweenWaveSeconds());
@@ -189,7 +194,7 @@ class ScoreboardManager {
         setSpecLine(sb, 5, msg.format(player, "scoreboard.sb-wave", Math.max(1, arena.getCurrentWave())));
         setSpecLine(sb, 4, msg.format(player, "scoreboard.sb-state", state));
         setSpecLine(sb, 3, msg.format(player, "scoreboard.sb-mobs", arena.getWaveRemainingMobCount()));
-        setSpecLine(sb, 2, msg.format(player, "scoreboard.sb-lives", arena.getVillageLives(), maxLives));
+        setSpecLine(sb, 2, msg.format(player, "scoreboard.sb-lives", arena.getVillageLives(), cachedMaxLives));
         setSpecLine(sb, 1, msg.format(player, "scoreboard.sb-players", arena.getPlayerCount(), arena.getMaxPlayers()));
         setSpecLine(sb, 0, msg.format(player, "scoreboard.separator"));
     }

@@ -38,9 +38,6 @@ public class MobEntryEditorGUI {
     private static final int SLOT_MAX_WAVE  = 16;
     private static final int SLOT_BACK      = 28;
 
-    /** Contexte d'édition par joueur : poolId|entryIndex */
-    private final Map<UUID, long[]> context = new HashMap<>();
-
     private final VillageDefensePlugin plugin;
 
     public MobEntryEditorGUI(VillageDefensePlugin plugin) {
@@ -62,7 +59,6 @@ public class MobEntryEditorGUI {
         if (pool == null || entryIndex >= pool.getEntries().size()) return;
 
         MobEntry e = pool.getEntries().get(entryIndex);
-        context.put(admin.getUniqueId(), new long[]{poolId.hashCode(), entryIndex});
 
         Inventory inv = Bukkit.createInventory(null, 36, m(TITLE) + " - " + e.getDisplayName());
         for (int i = 0; i < 36; i++) inv.setItem(i, ItemBuilder.separator());
@@ -100,10 +96,7 @@ public class MobEntryEditorGUI {
 
         inv.setItem(SLOT_BACK, new ItemBuilder(Material.ARROW).name(m("admin.common.back")).build());
 
-        // Store poolId as metadata for retrieval
         admin.openInventory(inv);
-        context.put(admin.getUniqueId(), new long[]{entryIndex});
-        // Re-store full context as string in a secondary map
         entryContext.put(admin.getUniqueId(), poolId + "|" + entryIndex);
     }
 

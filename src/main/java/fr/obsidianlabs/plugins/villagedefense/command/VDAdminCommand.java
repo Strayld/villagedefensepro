@@ -143,6 +143,9 @@ public class VDAdminCommand implements CommandExecutor, TabCompleter {
         plugin.reloadConfig();
         plugin.getMessages().reload();
         TowerSchematic.reload(plugin);
+        if (plugin.getArenaListener() != null) plugin.getArenaListener().reloadRewardCache();
+        if (plugin.getGameManager() != null) plugin.getGameManager().reloadConfig();
+        if (plugin.getSignListener() != null) plugin.getSignListener().rebuildSignIndex();
         ChatUtil.send(sender, plugin.getMessages().get("general.reload"));
     }
 

@@ -28,7 +28,7 @@ public class ArenaGameplaySettings {
     public static ArenaGameplaySettings createDefault() {
         ArenaGameplaySettings s = new ArenaGameplaySettings();
 
-        // Pool par défaut
+        // Pool normal par défaut
         MobPool defaultPool = new MobPool("normal_default", "Zombies");
         defaultPool.setDefaultCategory(WaveCategory.NORMAL);
         MobEntry zombie = new MobEntry("ZOMBIE", MobSource.VANILLA, "Zombie");
@@ -39,10 +39,21 @@ public class ArenaGameplaySettings {
         defaultPool.getEntries().add(zombie);
         s.mobPools.put(defaultPool.getId(), defaultPool);
 
+        // Pool boss par défaut
+        MobPool bossPool = new MobPool("boss_default", "Boss Zombies");
+        bossPool.setDefaultCategory(WaveCategory.BOSS);
+        MobEntry bossZombie = new MobEntry("HUSK", MobSource.VANILLA, "Boss Zombie");
+        bossZombie.setWeight(10);
+        bossZombie.setThreat(20.0);
+        bossZombie.setMinAmount(3);
+        bossZombie.setMaxAmount(3);
+        bossPool.getEntries().add(bossZombie);
+        s.mobPools.put(bossPool.getId(), bossPool);
+
         // Templates par catégorie
         for (WaveCategory cat : WaveCategory.values()) {
             WaveCategoryTemplate t = new WaveCategoryTemplate(cat);
-            t.setMobPoolId("normal_default");
+            t.setMobPoolId(cat == WaveCategory.BOSS ? "boss_default" : "normal_default");
             switch (cat) {
                 case ELITE   -> { t.setHealthMultiplier(1.5); t.setDamageMultiplier(1.2); t.setCategoryBudgetMultiplier(1.5); }
                 case BOSS    -> { t.setHealthMultiplier(4.0); t.setDamageMultiplier(2.0); t.setCategoryBudgetMultiplier(3.0); t.setCompositionMode(CompositionMode.FIXED); }

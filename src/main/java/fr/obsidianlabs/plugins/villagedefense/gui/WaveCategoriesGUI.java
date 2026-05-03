@@ -71,19 +71,20 @@ public class WaveCategoriesGUI {
 
         List<String> lore = new ArrayList<>();
         if (t == null) {
-            lore.add("&cTemplate non configuré");
-            lore.add("&7Clique pour créer");
+            lore.add(m("gui.gameplay.wave-categories.template-missing"));
+            lore.add(m("gui.gameplay.wave-categories.click-create"));
         } else {
-            lore.add("&7Statut: " + (t.isEnabled() ? "&aActivé" : "&cDésactivé"));
-            lore.add("&7Pool: &e" + (t.getMobPoolId() != null ? t.getMobPoolId() : "&cAucun"));
-            lore.add("&7Mode: &e" + t.getCompositionMode());
-            lore.add("&7Budget ×" + String.format("%.2f", t.getCategoryBudgetMultiplier()));
-            lore.add("&7❤ ×" + String.format("%.2f", t.getHealthMultiplier())
-                + "  &7⚔ ×" + String.format("%.2f", t.getDamageMultiplier())
-                + "  &7⚡ ×" + String.format("%.2f", t.getSpeedMultiplier()));
-            lore.add("&7Max types: &e" + t.getMaxMobTypes());
+            lore.add(m("gui.gameplay.wave-categories.status", m(t.isEnabled() ? "gui.gameplay.common.enabled-state" : "gui.gameplay.common.disabled-state")));
+            lore.add(m("gui.gameplay.wave-categories.pool", t.getMobPoolId() != null ? t.getMobPoolId() : m("gui.gameplay.common.none")));
+            lore.add(m("gui.gameplay.wave-categories.mode", t.getCompositionMode()));
+            lore.add(m("gui.gameplay.wave-categories.budget", String.format("%.2f", t.getCategoryBudgetMultiplier())));
+            lore.add(m("gui.gameplay.wave-categories.stats",
+                String.format("%.2f", t.getHealthMultiplier()),
+                String.format("%.2f", t.getDamageMultiplier()),
+                String.format("%.2f", t.getSpeedMultiplier())));
+            lore.add(m("gui.gameplay.wave-categories.max-types", t.getMaxMobTypes()));
             lore.add("");
-            lore.add("&eClique pour éditer");
+            lore.add(m("gui.gameplay.wave-categories.click-edit"));
         }
 
         return new ItemBuilder(t != null && t.isEnabled() ? mat : Material.GRAY_DYE)

@@ -1105,19 +1105,16 @@ public class GameManager {
             for (Player p : arena.getPlayers()) p.playSound(p.getLocation(), Sound.ENTITY_WITHER_DEATH, 0.5f, 0.8f);
         }
 
-        // Récompenses de fin de partie
-        List<String> rewardCmds = arena.getRewardCommands();
-        boolean vaultReward = arena.isRewardVaultEnabled() && arena.getRewardVaultAmount() > 0;
-        for (Player p : arena.getPlayers()) {
-            for (String cmd : rewardCmds) {
-                Bukkit.dispatchCommand(Bukkit.getConsoleSender(), cmd.replace("{player}", p.getName()));
-            }
-            if (vaultReward) {
+        List<Player> finishingPlayers = new ArrayList<>(arena.getPlayers());
+        List<String> rewardCmds = victory ? List.copyOf(arena.getRewardCommands()) : List.of();
+        boolean vaultReward = victory && arena.isRewardVaultEnabled() && arena.getRewardVaultAmount() > 0;
+        if (vaultReward) {
+            for (Player p : finishingPlayers) {
                 plugin.getHookManager().depositVaultMoney(p, arena.getRewardVaultAmount());
             }
         }
 
-        for (Player p : arena.getPlayers()) {
+        for (Player p : finishingPlayers) {
             VDPlayer vdp = plugin.getPlayerManager().getPlayer(p);
             if (vdp != null) {
                 plugin.fireProgress(p, arena, VillageDefenseProgressType.GAME_COMPLETE, 1, vdp.getTotalGamesPlayed(), victory ? "victory" : "defeat");
@@ -1146,6 +1143,15 @@ public class GameManager {
             }
             for (Player p : new ArrayList<>(arena.getSpectators())) {
                 plugin.getArenaManager().leaveArena(p);
+            }
+
+            if (!rewardCmds.isEmpty()) {
+                for (Player p : finishingPlayers) {
+                    if (!p.isOnline()) continue;
+                    for (String cmd : rewardCmds) {
+                        Bukkit.dispatchCommand(Bukkit.getConsoleSender(), cmd.replace("{player}", p.getName()));
+                    }
+                }
             }
 
             RegionSnapshot snapshot = arenaSnapshots.remove(arena.getId());

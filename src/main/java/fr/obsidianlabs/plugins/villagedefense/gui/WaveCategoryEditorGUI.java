@@ -70,40 +70,40 @@ public class WaveCategoryEditorGUI {
         for (int i = 0; i < 36; i++) inv.setItem(i, ItemBuilder.separator());
 
         inv.setItem(SLOT_ENABLED, new ItemBuilder(t.isEnabled() ? Material.LIME_DYE : Material.RED_DYE)
-            .name("&fActivé: " + (t.isEnabled() ? "&aOui" : "&cNon"))
-            .lore("", "&eClique pour basculer")
+            .name(m("gui.gameplay.wave-category-editor.enabled", m(t.isEnabled() ? "gui.gameplay.common.yes" : "gui.gameplay.common.no")))
+            .lore("", m("gui.gameplay.common.click-toggle"))
             .build());
 
         inv.setItem(SLOT_POOL, new ItemBuilder(Material.ZOMBIE_SPAWN_EGG)
-            .name("&ePool assigné")
-            .lore("&7Actuel: &f" + (t.getMobPoolId() != null ? t.getMobPoolId() : "&cAucun"),
-                  "", "&eClique pour choisir")
+            .name(m("gui.gameplay.wave-category-editor.assigned-pool"))
+            .lore(m("gui.gameplay.wave-category-editor.current", t.getMobPoolId() != null ? t.getMobPoolId() : m("gui.gameplay.common.none")),
+                  "", m("gui.gameplay.common.click-select"))
             .build());
 
         CompositionMode[] modes = CompositionMode.values();
         CompositionMode nextMode = modes[(t.getCompositionMode().ordinal() + 1) % modes.length];
         inv.setItem(SLOT_MODE, new ItemBuilder(Material.REPEATER)
-            .name("&eMode de composition")
-            .lore("&7Actuel: &f" + t.getCompositionMode(),
-                  "&7Suivant: &7" + nextMode,
-                  "", "&eClique pour changer")
+            .name(m("gui.gameplay.wave-category-editor.composition-mode"))
+            .lore(m("gui.gameplay.wave-category-editor.current", t.getCompositionMode()),
+                  m("gui.gameplay.wave-category-editor.next", nextMode),
+                  "", m("gui.gameplay.common.click-change"))
             .build());
 
-        inv.setItem(SLOT_BUDGET_MULT, multItem("&6Multiplicateur budget", t.getCategoryBudgetMultiplier()));
-        inv.setItem(SLOT_HEALTH,      multItem("&cMultiplicateur HP",     t.getHealthMultiplier()));
-        inv.setItem(SLOT_DAMAGE,      multItem("&6Multiplicateur dégâts", t.getDamageMultiplier()));
-        inv.setItem(SLOT_SPEED,       multItem("&eMultiplicateur vitesse",t.getSpeedMultiplier()));
+        inv.setItem(SLOT_BUDGET_MULT, multItem(m("gui.gameplay.wave-category-editor.budget-mult"), t.getCategoryBudgetMultiplier()));
+        inv.setItem(SLOT_HEALTH,      multItem(m("gui.gameplay.wave-category-editor.health-mult"), t.getHealthMultiplier()));
+        inv.setItem(SLOT_DAMAGE,      multItem(m("gui.gameplay.wave-category-editor.damage-mult"), t.getDamageMultiplier()));
+        inv.setItem(SLOT_SPEED,       multItem(m("gui.gameplay.wave-category-editor.speed-mult"), t.getSpeedMultiplier()));
 
         inv.setItem(SLOT_MAX_TYPES, new ItemBuilder(Material.BOOK)
-            .name("&aMax types de mobs")
-            .lore("&7Valeur: &e" + t.getMaxMobTypes(),
-                  "", "&eG/D: -1/+1")
+            .name(m("gui.gameplay.wave-category-editor.max-mob-types"))
+            .lore(m("gui.gameplay.common.value", t.getMaxMobTypes()),
+                  "", m("gui.gameplay.common.left-right-1"))
             .build());
 
         inv.setItem(SLOT_DEFAULT_COUNT, new ItemBuilder(Material.PAPER)
-            .name("&7Nombre de mobs par défaut")
-            .lore("&7Valeur: &e" + t.getDefaultMobCount(),
-                  "", "&eG/D: -1/+1")
+            .name(m("gui.gameplay.wave-category-editor.default-mob-count"))
+            .lore(m("gui.gameplay.common.value", t.getDefaultMobCount()),
+                  "", m("gui.gameplay.common.left-right-1"))
             .build());
 
         inv.setItem(SLOT_BACK, new ItemBuilder(Material.ARROW).name(m("admin.common.back")).build());
@@ -114,8 +114,8 @@ public class WaveCategoryEditorGUI {
     private org.bukkit.inventory.ItemStack multItem(String name, double value) {
         return new ItemBuilder(Material.COMPARATOR)
             .name(name)
-            .lore("&7Valeur: &e" + String.format("%.2f", value),
-                  "", "&eG/D: -0.05/+0.05  Shift: -0.1/+0.1")
+            .lore(m("gui.gameplay.common.value", String.format("%.2f", value)),
+                  "", m("gui.gameplay.wave-category-editor.mult-controls"))
             .build();
     }
 
@@ -150,8 +150,8 @@ public class WaveCategoryEditorGUI {
             case SLOT_ENABLED -> t.setEnabled(!t.isEnabled());
             case SLOT_POOL -> {
                 admin.closeInventory();
-                ChatUtil.send(admin, "&eEntrez l'ID du pool (ou 'none'):");
-                plugin.getChatInputManager().prompt(admin, "&eID du pool:", input -> {
+                ChatUtil.send(admin, m("gui.gameplay.wave-category-editor.enter-pool-id"));
+                plugin.getChatInputManager().prompt(admin, m("gui.gameplay.wave-category-editor.pool-id-prompt"), input -> {
                     if (!input.equalsIgnoreCase("none")) {
                         t.setMobPoolId(input.trim());
                     } else {

@@ -80,25 +80,25 @@ public class WaveScalingGUI {
         for (int i = 0; i < 54; i++) inv.setItem(i, ItemBuilder.separator());
         for (int i = 36; i < 45; i++) inv.setItem(i, ItemBuilder.separator(Material.BLACK_STAINED_GLASS_PANE));
 
-        inv.setItem(SLOT_BASE_BUDGET,    numItem(Material.GOLD_INGOT,    "&6Budget de base",     s.getBaseBudget(),           "Budget initial au démarrage"));
-        inv.setItem(SLOT_LINEAR_GROWTH,  numItem(Material.IRON_INGOT,    "&7Croissance linéaire", s.getLinearGrowth(),         "Ajout fixe de budget par vague"));
-        inv.setItem(SLOT_EXPO_GROWTH,    numItem(Material.DIAMOND,       "&bCroissance expo",     s.getExponentialGrowth(),    "Accélération wave²×expo"));
-        inv.setItem(SLOT_BASE_HEALTH,    numItem(Material.RED_DYE,       "&cSanté de base",       s.getBaseHealthMultiplier(), "Multiplicateur HP initial"));
-        inv.setItem(SLOT_BASE_DAMAGE,    numItem(Material.ORANGE_DYE,    "&6Dégâts de base",      s.getBaseDamageMultiplier(), "Multiplicateur dégâts initial"));
-        inv.setItem(SLOT_BASE_SPEED,     numItem(Material.YELLOW_DYE,    "&eVitesse de base",     s.getBaseSpeedMultiplier(),  "Multiplicateur vitesse initial"));
+        inv.setItem(SLOT_BASE_BUDGET,    numItem(Material.GOLD_INGOT,    m("gui.gameplay.wave-scaling.base-budget"),     s.getBaseBudget(),           m("gui.gameplay.wave-scaling.base-budget-desc")));
+        inv.setItem(SLOT_LINEAR_GROWTH,  numItem(Material.IRON_INGOT,    m("gui.gameplay.wave-scaling.linear-growth"),   s.getLinearGrowth(),         m("gui.gameplay.wave-scaling.linear-growth-desc")));
+        inv.setItem(SLOT_EXPO_GROWTH,    numItem(Material.DIAMOND,       m("gui.gameplay.wave-scaling.expo-growth"),     s.getExponentialGrowth(),    m("gui.gameplay.wave-scaling.expo-growth-desc")));
+        inv.setItem(SLOT_BASE_HEALTH,    numItem(Material.RED_DYE,       m("gui.gameplay.wave-scaling.base-health"),     s.getBaseHealthMultiplier(), m("gui.gameplay.wave-scaling.base-health-desc")));
+        inv.setItem(SLOT_BASE_DAMAGE,    numItem(Material.ORANGE_DYE,    m("gui.gameplay.wave-scaling.base-damage"),     s.getBaseDamageMultiplier(), m("gui.gameplay.wave-scaling.base-damage-desc")));
+        inv.setItem(SLOT_BASE_SPEED,     numItem(Material.YELLOW_DYE,    m("gui.gameplay.wave-scaling.base-speed"),      s.getBaseSpeedMultiplier(),  m("gui.gameplay.wave-scaling.base-speed-desc")));
 
-        inv.setItem(SLOT_HEALTH_WAVE,    numItem(Material.PINK_DYE,      "&cHP par vague",         s.getHealthPerWave(),   "+HP par numéro de vague"));
-        inv.setItem(SLOT_DAMAGE_WAVE,    numItem(Material.ORANGE_TULIP,  "&6Dégâts par vague",     s.getDamagePerWave(),   "+Dégâts par numéro de vague"));
-        inv.setItem(SLOT_SPEED_WAVE,     numItem(Material.DANDELION,     "&eVitesse par vague",    s.getSpeedPerWave(),    "+Vitesse par numéro de vague"));
-        inv.setItem(SLOT_BOSS_INTERVAL,  intItem( Material.WITHER_SKELETON_SKULL, "&cIntervalle Boss",  s.getBossInterval(),    "0 = désactivé"));
-        inv.setItem(SLOT_ELITE_INTERVAL, intItem( Material.IRON_CHESTPLATE,       "&7Intervalle Elite", s.getEliteInterval(),   "0 = désactivé"));
-        inv.setItem(SLOT_SPEC_INTERVAL,  intItem( Material.NETHER_STAR,           "&dIntervalle Spécial", s.getSpecialInterval(), "0 = désactivé"));
+        inv.setItem(SLOT_HEALTH_WAVE,    numItem(Material.PINK_DYE,      m("gui.gameplay.wave-scaling.health-wave"),     s.getHealthPerWave(),        m("gui.gameplay.wave-scaling.health-wave-desc")));
+        inv.setItem(SLOT_DAMAGE_WAVE,    numItem(Material.ORANGE_TULIP,  m("gui.gameplay.wave-scaling.damage-wave"),     s.getDamagePerWave(),        m("gui.gameplay.wave-scaling.damage-wave-desc")));
+        inv.setItem(SLOT_SPEED_WAVE,     numItem(Material.DANDELION,     m("gui.gameplay.wave-scaling.speed-wave"),      s.getSpeedPerWave(),         m("gui.gameplay.wave-scaling.speed-wave-desc")));
+        inv.setItem(SLOT_BOSS_INTERVAL,  intItem(Material.WITHER_SKELETON_SKULL, m("gui.gameplay.wave-scaling.boss-interval"),  s.getBossInterval(),    m("gui.gameplay.wave-scaling.interval-desc")));
+        inv.setItem(SLOT_ELITE_INTERVAL, intItem(Material.IRON_CHESTPLATE,       m("gui.gameplay.wave-scaling.elite-interval"), s.getEliteInterval(),   m("gui.gameplay.wave-scaling.interval-desc")));
+        inv.setItem(SLOT_SPEC_INTERVAL,  intItem(Material.NETHER_STAR,           m("gui.gameplay.wave-scaling.special-interval"), s.getSpecialInterval(), m("gui.gameplay.wave-scaling.interval-desc")));
 
-        inv.setItem(SLOT_EARLY_TYPES,    intItem(Material.LIME_CONCRETE,   "&aTypes mobs early",  s.getEarlyGameMaxMobTypes(), "Max types vague 1→mid"));
-        inv.setItem(SLOT_MID_TYPES,      intItem(Material.YELLOW_CONCRETE, "&eTypes mobs mid",    s.getMidGameMaxMobTypes(),   "Max types mid→late"));
-        inv.setItem(SLOT_LATE_TYPES,     intItem(Material.RED_CONCRETE,    "&cTypes mobs late",   s.getLateGameMaxMobTypes(),  "Max types vague late+"));
-        inv.setItem(SLOT_MID_WAVE,       intItem(Material.LIME_DYE,        "&aVague mid-game",    s.getMidGameStartWave(),     "À partir de quelle vague"));
-        inv.setItem(SLOT_LATE_WAVE,      intItem(Material.RED_DYE,         "&cVague late-game",   s.getLateGameStartWave(),    "À partir de quelle vague"));
+        inv.setItem(SLOT_EARLY_TYPES,    intItem(Material.LIME_CONCRETE,   m("gui.gameplay.wave-scaling.early-types"), s.getEarlyGameMaxMobTypes(), m("gui.gameplay.wave-scaling.early-types-desc")));
+        inv.setItem(SLOT_MID_TYPES,      intItem(Material.YELLOW_CONCRETE, m("gui.gameplay.wave-scaling.mid-types"),   s.getMidGameMaxMobTypes(),   m("gui.gameplay.wave-scaling.mid-types-desc")));
+        inv.setItem(SLOT_LATE_TYPES,     intItem(Material.RED_CONCRETE,    m("gui.gameplay.wave-scaling.late-types"),  s.getLateGameMaxMobTypes(),  m("gui.gameplay.wave-scaling.late-types-desc")));
+        inv.setItem(SLOT_MID_WAVE,       intItem(Material.LIME_DYE,        m("gui.gameplay.wave-scaling.mid-wave"),    s.getMidGameStartWave(),     m("gui.gameplay.wave-scaling.start-wave-desc")));
+        inv.setItem(SLOT_LATE_WAVE,      intItem(Material.RED_DYE,         m("gui.gameplay.wave-scaling.late-wave"),   s.getLateGameStartWave(),    m("gui.gameplay.wave-scaling.start-wave-desc")));
 
         inv.setItem(SLOT_BACK, new ItemBuilder(Material.ARROW).name(m("admin.common.back")).build());
 
@@ -108,19 +108,19 @@ public class WaveScalingGUI {
     private ItemStack numItem(Material mat, String name, double value, String desc) {
         return new ItemBuilder(mat)
             .name(name)
-            .lore("&7" + desc, "", "&fValeur: &e" + String.format("%.4f", value),
-                  "", "&eClique gauche &7-0.01  &eClique droit &7+0.01",
-                  "&eShift+G &7-0.1  &eShift+D &7+0.1",
-                  "&eClique milieu &7→ saisie libre")
+            .lore("&7" + desc, "", m("gui.gameplay.common.value", String.format("%.4f", value)),
+                  "", m("gui.gameplay.wave-scaling.double-controls-1"),
+                  m("gui.gameplay.wave-scaling.double-controls-2"),
+                  m("gui.gameplay.wave-scaling.double-controls-3"))
             .build();
     }
 
     private ItemStack intItem(Material mat, String name, int value, String desc) {
         return new ItemBuilder(mat)
             .name(name)
-            .lore("&7" + desc, "", "&fValeur: &e" + value,
-                  "", "&eClique gauche &7-1  &eClique droit &7+1",
-                  "&eShift+G &7-5  &eShift+D &7+5")
+            .lore("&7" + desc, "", m("gui.gameplay.common.value", value),
+                  "", m("gui.gameplay.wave-scaling.int-controls-1"),
+                  m("gui.gameplay.wave-scaling.int-controls-2"))
             .build();
     }
 
@@ -180,14 +180,14 @@ public class WaveScalingGUI {
 
     private void promptDouble(Player admin, Arena arena, String field, WaveScalingSettings s) {
         admin.closeInventory();
-        plugin.getChatInputManager().prompt(admin, "&eNouvelle valeur pour &b" + field + "&e:", input -> {
+        plugin.getChatInputManager().prompt(admin, m("gui.gameplay.wave-scaling.prompt", field), input -> {
             try {
                 double val = Double.parseDouble(input.trim());
                 applyDouble(field, val, s);
                 plugin.getArenaGameplayService().saveSettings(arena.getId());
-                ChatUtil.send(admin, "&a" + field + " &fdéfini à &e" + val);
+                ChatUtil.send(admin, m("gui.gameplay.wave-scaling.value-set", field, val));
             } catch (NumberFormatException e) {
-                ChatUtil.send(admin, "&cNombre invalide.");
+                ChatUtil.send(admin, m("gui.gameplay.common.invalid-number"));
             }
             open(admin, arena);
         });

@@ -63,11 +63,11 @@ public class WaveOverridesGUI {
         }
 
         inv.setItem(SLOT_CREATE, new ItemBuilder(Material.WRITABLE_BOOK)
-            .name("&a+ Créer un override")
-            .lore("&7Force une configuration spéciale",
-                  "&7sur une vague précise.",
-                  "&8⚠ Fonctionnalité avancée.",
-                  "", "&eClique pour créer")
+            .name(m("gui.gameplay.wave-overrides.create"))
+            .lore(m("gui.gameplay.wave-overrides.create-lore1"),
+                  m("gui.gameplay.wave-overrides.create-lore2"),
+                  m("gui.gameplay.wave-overrides.create-lore3"),
+                  "", m("gui.gameplay.wave-overrides.create-click"))
             .build());
 
         inv.setItem(SLOT_BACK, new ItemBuilder(Material.ARROW).name(m("admin.common.back")).build());
@@ -77,23 +77,23 @@ public class WaveOverridesGUI {
 
     private ItemStack buildOverrideItem(WaveOverride o) {
         List<String> lore = new ArrayList<>();
-        lore.add("&7Statut: " + (o.isEnabled() ? "&aActivé" : "&cDésactivé"));
-        if (o.getForcedCategory() != null)       lore.add("&7Catégorie: &e" + o.getForcedCategory());
-        if (o.getForcedPoolId() != null)          lore.add("&7Pool: &e" + o.getForcedPoolId());
-        if (o.getForcedCompositionMode() != null) lore.add("&7Mode: &e" + o.getForcedCompositionMode());
+        lore.add(m("gui.gameplay.wave-overrides.status", m(o.isEnabled() ? "gui.gameplay.common.enabled-state" : "gui.gameplay.common.disabled-state")));
+        if (o.getForcedCategory() != null)       lore.add(m("gui.gameplay.wave-overrides.category", o.getForcedCategory()));
+        if (o.getForcedPoolId() != null)          lore.add(m("gui.gameplay.wave-overrides.pool", o.getForcedPoolId()));
+        if (o.getForcedCompositionMode() != null) lore.add(m("gui.gameplay.wave-overrides.mode", o.getForcedCompositionMode()));
         if (o.getHealthMultiplierOverride() != null)
-            lore.add("&7❤ ×" + String.format("%.2f", o.getHealthMultiplierOverride()));
+            lore.add(m("gui.gameplay.wave-overrides.health", String.format("%.2f", o.getHealthMultiplierOverride())));
         if (o.getDamageMultiplierOverride() != null)
-            lore.add("&7⚔ ×" + String.format("%.2f", o.getDamageMultiplierOverride()));
+            lore.add(m("gui.gameplay.wave-overrides.damage", String.format("%.2f", o.getDamageMultiplierOverride())));
         if (o.getSpeedMultiplierOverride() != null)
-            lore.add("&7⚡ ×" + String.format("%.2f", o.getSpeedMultiplierOverride()));
+            lore.add(m("gui.gameplay.wave-overrides.speed", String.format("%.2f", o.getSpeedMultiplierOverride())));
         lore.add("");
-        lore.add("&eClique gauche &7→ éditer");
-        lore.add("&eClique droit &7→ activer/désactiver");
-        lore.add("&eShift+D &7→ supprimer");
+        lore.add(m("gui.gameplay.wave-overrides.click-edit"));
+        lore.add(m("gui.gameplay.wave-overrides.click-toggle"));
+        lore.add(m("gui.gameplay.wave-overrides.click-delete"));
 
         return new ItemBuilder(o.isEnabled() ? Material.REPEATER : Material.COMPARATOR)
-            .name("&fVague &e#" + o.getWaveIndex())
+            .name(m("gui.gameplay.wave-overrides.wave-title", o.getWaveIndex()))
             .lore(lore)
             .build();
     }
@@ -117,14 +117,14 @@ public class WaveOverridesGUI {
 
         if (slot == SLOT_CREATE) {
             admin.closeInventory();
-            plugin.getChatInputManager().prompt(admin, "&eNuméro de la vague à overrider:", input -> {
+            plugin.getChatInputManager().prompt(admin, m("gui.gameplay.wave-overrides.wave-number-prompt"), input -> {
                 try {
                     int waveIndex = Integer.parseInt(input.trim());
                     if (waveIndex < 1) throw new NumberFormatException();
 
                     ArenaGameplaySettings settings = plugin.getArenaGameplayService().getSettings(arena.getId());
                     if (settings.getWaveOverrides().containsKey(waveIndex)) {
-                        ChatUtil.send(admin, "&cUn override existe déjà pour la vague " + waveIndex + ".");
+                        ChatUtil.send(admin, m("gui.gameplay.wave-overrides.already-exists", waveIndex));
                         open(admin, arena);
                         return;
                     }
@@ -132,10 +132,10 @@ public class WaveOverridesGUI {
                     WaveOverride o = new WaveOverride(waveIndex);
                     settings.getWaveOverrides().put(waveIndex, o);
                     plugin.getArenaGameplayService().saveSettings(arena.getId());
-                    ChatUtil.send(admin, "&aOverride créé pour la vague &e" + waveIndex + "&a.");
+                    ChatUtil.send(admin, m("gui.gameplay.wave-overrides.created", waveIndex));
                     openEditor(admin, arena, waveIndex);
                 } catch (NumberFormatException e) {
-                    ChatUtil.send(admin, "&cNuméro de vague invalide (doit être >= 1).");
+                    ChatUtil.send(admin, m("gui.gameplay.wave-overrides.invalid-wave-number"));
                     open(admin, arena);
                 }
             });
@@ -154,7 +154,7 @@ public class WaveOverridesGUI {
         if (click.isShiftClick() && click.isRightClick()) {
             settings.getWaveOverrides().remove(waveIndex);
             plugin.getArenaGameplayService().saveSettings(arena.getId());
-            ChatUtil.send(admin, "&cOverride vague &e" + waveIndex + " &csupprimé.");
+            ChatUtil.send(admin, m("gui.gameplay.wave-overrides.deleted", waveIndex));
             open(admin, arena);
         } else if (click.isRightClick()) {
             o.setEnabled(!o.isEnabled());
@@ -172,15 +172,15 @@ public class WaveOverridesGUI {
         if (o == null) return;
 
         admin.closeInventory();
-        ChatUtil.send(admin, "&6--- Override vague &e" + waveIndex + " &6---");
-        ChatUtil.send(admin, "&7Entrez les valeurs au format: &fcatégorie,poolId,compositionMode,health,damage,speed");
-        ChatUtil.send(admin, "&7Utilisez &f- &7pour laisser une valeur inchangée. Ex: &fBOSS,-,FIXED,2.0,-,-");
-        ChatUtil.send(admin, "&7Catégories: NORMAL, ELITE, BOSS, SPECIAL | Modes: WEIGHTED, RANDOM, FIXED");
+        ChatUtil.send(admin, m("gui.gameplay.wave-overrides.editor-title", waveIndex));
+        ChatUtil.send(admin, m("gui.gameplay.wave-overrides.editor-format"));
+        ChatUtil.send(admin, m("gui.gameplay.wave-overrides.editor-example"));
+        ChatUtil.send(admin, m("gui.gameplay.wave-overrides.editor-values"));
 
-        plugin.getChatInputManager().prompt(admin, "&eValeurs:", input -> {
+        plugin.getChatInputManager().prompt(admin, m("gui.gameplay.wave-overrides.editor-prompt"), input -> {
             String[] parts = input.split(",");
             if (parts.length != 6) {
-                ChatUtil.send(admin, "&cFormat invalide. Attendu: catégorie,poolId,mode,health,damage,speed");
+                ChatUtil.send(admin, m("gui.gameplay.wave-overrides.invalid-format"));
                 open(admin, arena);
                 return;
             }
@@ -194,19 +194,19 @@ public class WaveOverridesGUI {
 
             if (!cat.equals("-")) {
                 try { o.setForcedCategory(WaveCategory.valueOf(cat.toUpperCase())); }
-                catch (IllegalArgumentException e) { ChatUtil.send(admin, "&cCatégorie invalide: " + cat); }
+                catch (IllegalArgumentException e) { ChatUtil.send(admin, m("gui.gameplay.wave-overrides.invalid-category", cat)); }
             }
             if (!pool.equals("-"))   o.setForcedPoolId(pool);
             if (!mode.equals("-")) {
                 try { o.setForcedCompositionMode(CompositionMode.valueOf(mode.toUpperCase())); }
-                catch (IllegalArgumentException e) { ChatUtil.send(admin, "&cMode invalide: " + mode); }
+                catch (IllegalArgumentException e) { ChatUtil.send(admin, m("gui.gameplay.wave-overrides.invalid-mode", mode)); }
             }
             if (!health.equals("-")) { try { o.setHealthMultiplierOverride(Double.parseDouble(health)); } catch (NumberFormatException ignored) {} }
             if (!damage.equals("-")) { try { o.setDamageMultiplierOverride(Double.parseDouble(damage)); } catch (NumberFormatException ignored) {} }
             if (!speed.equals("-"))  { try { o.setSpeedMultiplierOverride(Double.parseDouble(speed));  } catch (NumberFormatException ignored) {} }
 
             plugin.getArenaGameplayService().saveSettings(arena.getId());
-            ChatUtil.send(admin, "&aOverride vague &e" + waveIndex + " &amis à jour.");
+            ChatUtil.send(admin, m("gui.gameplay.wave-overrides.updated", waveIndex));
             open(admin, arena);
         });
     }

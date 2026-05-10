@@ -182,7 +182,35 @@ public class SQLiteDatabase implements Database {
 
     @Override
     public CompletableFuture<List<LeaderboardEntry>> getTopPlayersByArena(int limit, String orderBy, String arenaId) {
-        return CompletableFuture.completedFuture(List.of());
+        String col = switch (orderBy) {
+            case "total_waves", "waves" -> "waves";
+            case "total_games", "games" -> "games";
+            default -> "kills";
+        };
+        return CompletableFuture.supplyAsync(() -> {
+            List<LeaderboardEntry> list = new ArrayList<>();
+            String sql = "SELECT p.name, s.kills, s.waves, s.games " +
+                         "FROM vd_arena_stats s JOIN vd_players p ON s.uuid = p.uuid " +
+                         "WHERE s.arena_id = ? ORDER BY s." + col + " DESC LIMIT ?";
+            try (Connection conn = dataSource.getConnection();
+                 PreparedStatement ps = conn.prepareStatement(sql)) {
+                ps.setString(1, arenaId);
+                ps.setInt(2, limit);
+                ResultSet rs = ps.executeQuery();
+                while (rs.next()) {
+                    list.add(new LeaderboardEntry(
+                        rs.getString("name"),
+                        rs.getInt("kills"),
+                        rs.getInt("waves"),
+                        rs.getInt("games"),
+                        0L
+                    ));
+                }
+            } catch (SQLException e) {
+                plugin.getLogger().log(Level.SEVERE, "[Database] Erreur leaderboard arène", e);
+            }
+            return list;
+        });
     }
 
     // ── Tentatives par arène ──────────────────────────────────────────────────

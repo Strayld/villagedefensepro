@@ -174,7 +174,7 @@ public class TrapManager {
         String text = buildTrapText(slot);
         Location pos = slot.getLocation().clone().add(0.5, 2.5, 0.5);
         if (pos.getWorld() == null) return;
-        FloatingText display = trapDisplays.computeIfAbsent(slot, key -> new FloatingText());
+        FloatingText display = trapDisplays.computeIfAbsent(slot, key -> new FloatingText(plugin));
         display.update(pos, text);
     }
 

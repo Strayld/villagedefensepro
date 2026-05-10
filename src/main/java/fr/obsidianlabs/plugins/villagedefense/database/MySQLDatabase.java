@@ -416,7 +416,8 @@ public class MySQLDatabase implements Database {
     @Override
     public CompletableFuture<List<LeaderboardEntry>> getTopPlayersByArena(int limit, String orderBy, String arenaId) {
         String col = switch (orderBy) {
-            case "waves", "games" -> orderBy;
+            case "total_waves", "waves" -> "waves";
+            case "total_games", "games" -> "games";
             default -> "kills";
         };
         return CompletableFuture.supplyAsync(() -> {

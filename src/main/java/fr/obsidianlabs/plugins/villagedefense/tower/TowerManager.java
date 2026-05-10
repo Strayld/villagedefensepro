@@ -322,7 +322,7 @@ public class TowerManager {
 
     private void spawnOrUpdateSlotDisplay(TowerSlot slot, String text, Location pos) {
         if (pos.getWorld() == null) return;
-        FloatingText display = slotDisplays.computeIfAbsent(slot, key -> new FloatingText());
+        FloatingText display = slotDisplays.computeIfAbsent(slot, key -> new FloatingText(plugin));
         display.update(pos, text);
     }
 

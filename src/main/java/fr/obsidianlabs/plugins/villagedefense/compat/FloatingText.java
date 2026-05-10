@@ -1,8 +1,12 @@
 package fr.obsidianlabs.plugins.villagedefense.compat;
 
+import fr.obsidianlabs.plugins.villagedefense.VillageDefensePlugin;
 import fr.obsidianlabs.plugins.villagedefense.util.ChatUtil;
 import org.bukkit.Location;
+import org.bukkit.NamespacedKey;
 import org.bukkit.entity.ArmorStand;
+import org.bukkit.entity.Entity;
+import org.bukkit.persistence.PersistentDataType;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -10,8 +14,15 @@ import java.util.List;
 public final class FloatingText {
 
     private static final double LINE_HEIGHT = 0.26D;
+    private static final double CLEANUP_RADIUS_XZ = 1.25D;
+    private static final double CLEANUP_RADIUS_Y = 3.0D;
 
+    private final NamespacedKey hologramKey;
     private final List<ArmorStand> lines = new ArrayList<>();
+
+    public FloatingText(VillageDefensePlugin plugin) {
+        this.hologramKey = plugin.getKey("leaderboard_hologram");
+    }
 
     public boolean isValid() {
         return !lines.isEmpty() && lines.stream().allMatch(ArmorStand::isValid);
@@ -52,6 +63,7 @@ public final class FloatingText {
     }
 
     private void spawn(Location baseLocation, List<String> renderedLines) {
+        cleanupNearby(baseLocation);
         for (int i = 0; i < renderedLines.size(); i++) {
             String lineText = renderedLines.get(i);
             Location lineLocation = lineLocation(baseLocation, renderedLines.size(), i);
@@ -65,8 +77,25 @@ public final class FloatingText {
                 stand.setInvulnerable(true);
                 stand.setCustomNameVisible(true);
                 stand.setCustomName(lineText);
+                stand.getPersistentDataContainer().set(hologramKey, PersistentDataType.BYTE, (byte) 1);
             });
             lines.add(armorStand);
+        }
+    }
+
+    public void cleanupNearby(Location baseLocation) {
+        if (baseLocation.getWorld() == null) {
+            return;
+        }
+        for (Entity entity : baseLocation.getWorld().getNearbyEntities(
+            baseLocation, CLEANUP_RADIUS_XZ, CLEANUP_RADIUS_Y, CLEANUP_RADIUS_XZ
+        )) {
+            if (!(entity instanceof ArmorStand stand)) {
+                continue;
+            }
+            if (stand.getPersistentDataContainer().has(hologramKey, PersistentDataType.BYTE)) {
+                stand.remove();
+            }
         }
     }
 

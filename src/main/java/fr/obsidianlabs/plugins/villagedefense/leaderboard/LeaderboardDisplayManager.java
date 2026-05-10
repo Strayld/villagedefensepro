@@ -29,12 +29,14 @@ public final class LeaderboardDisplayManager {
     private BukkitTask refreshTask;
     private int rotationIndex = 0;
     private boolean refreshInFlight = false;
+    private boolean staleCleanupDone = false;
 
     public LeaderboardDisplayManager(VillageDefensePlugin plugin) {
         this.plugin = plugin;
     }
 
     public void init() {
+        cleanupStaleDisplays();
         refreshTask = plugin.getServer().getScheduler()
             .runTaskTimer(plugin, this::refreshNow, 40L, REFRESH_INTERVAL_TICKS);
     }
@@ -111,7 +113,7 @@ public final class LeaderboardDisplayManager {
             removeDisplay(key);
             return;
         }
-        displays.computeIfAbsent(key, k -> new FloatingText()).update(location, text);
+        displays.computeIfAbsent(key, k -> new FloatingText(plugin)).update(location, text);
     }
 
     private void cleanupOrphans(List<Arena> globalArenas, List<Arena> arenaArenas) {
@@ -138,6 +140,24 @@ public final class LeaderboardDisplayManager {
             display.remove();
         }
         displays.clear();
+    }
+
+    private void cleanupStaleDisplays() {
+        if (staleCleanupDone || plugin.getArenaManager() == null) {
+            return;
+        }
+        FloatingText cleanupHelper = new FloatingText(plugin);
+        for (Arena arena : plugin.getArenaManager().getAllArenas()) {
+            Location globalLocation = arena.getLeaderboardLocation();
+            if (globalLocation != null) {
+                cleanupHelper.cleanupNearby(globalLocation);
+            }
+            Location arenaLocation = arena.getArenaLeaderboardLocation();
+            if (arenaLocation != null) {
+                cleanupHelper.cleanupNearby(arenaLocation);
+            }
+        }
+        staleCleanupDone = true;
     }
 
     private String buildText(String title, String category, List<LeaderboardEntry> entries) {
